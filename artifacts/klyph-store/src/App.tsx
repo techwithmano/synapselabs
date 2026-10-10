@@ -42,6 +42,13 @@ const finishes: { name: Finish; color: string }[] = [
   { name: 'Stealth Navy', color: '#0f172a' },
   { name: 'Raw Titanium', color: '#94a3b8' },
 ];
+const comparisonRows = [
+  ['Biometric Pin Authorization', 'Sub-200ms Capacitive', 'None (Manual pull)', 'PIN Buttons (Vulnerable)'],
+  ['Asset Geolocation Tracking', 'Native Apple Find My', 'None', 'None'],
+  ['Enclave Certification', 'Common Criteria EAL6+', 'N/A', 'EAL5+ Standard'],
+  ['Material Composition', 'Grade 5 Titanium CNC', 'Aluminum Alloy / PU Leather', 'Molded Polycarbonate'],
+  ['Liquid Submersion Rating', 'IP68 (6m depth 24h)', 'Unrated', 'Non-waterproof'],
+] as const;
 const usdRate = 95 / 29;
 
 function App() {
@@ -175,9 +182,13 @@ function App() {
               </a>
             </div>
 
-            <div className="relative mt-9 flex w-full max-w-[940px] items-center justify-center sm:mt-11">
+            <div className="relative mt-9 flex w-full max-w-[1100px] items-center justify-center gap-3 sm:mt-11">
               <div className="pointer-events-none absolute inset-x-[12%] top-1/2 h-48 -translate-y-1/2 rounded-full bg-[#eab308]/10 blur-[80px]" />
-              <div className="relative w-full max-w-[660px] rounded-xl border border-[#313540] bg-gradient-to-b from-[#313540]/70 via-[#171b26] to-[#090d15] p-1.5 shadow-[0_24px_65px_-20px_rgba(0,0,0,.8)]">
+              <div className="hidden shrink-0 flex-col gap-3 pt-[70px] xl:flex">
+                <Metric title="Speed Index" value="0.18s" detail="Capacitive Biometric Unlock" />
+                <Metric title="Chassis Alloy" value="6mm Ti" detail="Aerospace Grade 5 Monolith" />
+              </div>
+              <div className="relative w-full max-w-[660px] flex-1 rounded-xl border border-[#313540] bg-gradient-to-b from-[#313540]/70 via-[#171b26] to-[#090d15] p-1.5 shadow-[0_24px_65px_-20px_rgba(0,0,0,.8)]">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[#080c14] sm:aspect-[16/9]">
                   <img src="/images/klyph-pro.webp" alt="KLYPH Pro titanium biometric wallet, precision machined in black titanium" className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-[1.025]" data-testid="img-hero-product" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080c14]/90 via-transparent to-transparent" />
@@ -187,16 +198,12 @@ function App() {
                   </div>
                 </div>
               </div>
-              <div className="absolute -left-3 top-[20%] hidden flex-col gap-3 lg:flex">
-                <Metric title="Speed Index" value="0.18s" detail="Capacitive Biometric Unlock" />
-                <Metric title="Chassis Alloy" value="6mm Ti" detail="Aerospace Grade 5 Monolith" />
-              </div>
-              <div className="absolute -right-3 top-[20%] hidden flex-col gap-3 lg:flex">
+              <div className="hidden shrink-0 flex-col gap-3 pt-[70px] xl:flex">
                 <Metric title="Enclave Standard" value="CC EAL6+" detail="Dual-Isolated HSM Core" />
                 <Metric title="RF Attenuation" value="100%" detail="Faraday RFID/NFC Blinded" />
               </div>
             </div>
-            <div className="mt-4 grid w-full grid-cols-2 gap-2 sm:grid-cols-4 lg:hidden">
+            <div className="mt-4 grid w-full grid-cols-2 gap-2 xl:hidden sm:grid-cols-4">
               {[['Unlock', '0.18s'], ['Body', '6mm Ti'], ['Enclave', 'EAL6+'], ['Shielding', '100%']].map(([label, value]) => (
                 <div key={label} className="rounded-lg border border-[#313540] bg-[#171b26] px-2 py-2.5 text-center">
                   <div className="font-display text-[9px] uppercase tracking-widest text-[#eab308]">{label}</div><div className="mt-1 font-display text-[16px] font-semibold">{value}</div>
@@ -253,17 +260,34 @@ function App() {
               <div><div className="section-kicker mb-2">Comparative Metrics</div><h2 className="font-display text-[24px] font-bold leading-tight tracking-[-.025em] sm:text-[30px]">Standard Wallets vs. KLYPH Architecture</h2></div>
               <p className="text-[12px] text-[#a4a9b7]">Audited benchmark across mechanical and cryptographic parameters.</p>
             </div>
-            <div className="overflow-x-auto">
+            <div className="grid gap-3 lg:hidden" aria-label="Comparison metrics">
+              {comparisonRows.map(([capability, klyph, standard, hardware]) => (
+                <article key={capability} className="rounded-lg border border-[#313540] bg-[#0b0f19]/60 p-3.5">
+                  <h3 className="font-display text-[12px] font-semibold text-[#e2e4eb]">{capability}</h3>
+                  <dl className="mt-3 grid gap-2">
+                    <div className="rounded-md border border-[#313540]/70 bg-[#171b26] px-3 py-2">
+                      <dt className="font-display text-[9px] font-semibold uppercase tracking-wider text-[#facc15]">KLYPH Pro Vault</dt>
+                      <dd className="mt-1 text-[11px] leading-4 text-[#e2e4eb]">{klyph}</dd>
+                    </div>
+                    <div className="rounded-md border border-[#313540]/70 bg-[#171b26] px-3 py-2">
+                      <dt className="font-display text-[9px] font-semibold uppercase tracking-wider text-[#a4a9b7]">Standard RFID Wallet</dt>
+                      <dd className="mt-1 text-[11px] leading-4 text-[#e2e4eb]">{standard}</dd>
+                    </div>
+                    <div className="rounded-md border border-[#313540]/70 bg-[#171b26] px-3 py-2">
+                      <dt className="font-display text-[9px] font-semibold uppercase tracking-wider text-[#a4a9b7]">Plastic Hardware Key</dt>
+                      <dd className="mt-1 text-[11px] leading-4 text-[#e2e4eb]">{hardware}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto lg:block">
               <table className="table-min w-full border-collapse text-left" data-testid="table-comparison">
                 <thead><tr className="border-b border-[#313540] font-display text-[10px] uppercase tracking-wider text-[#a4a9b7]"><th className="px-3 py-3">Vector / Capability</th><th className="px-3 py-3 text-[#facc15]">KLYPH Pro Vault</th><th className="px-3 py-3">Standard RFID Wallet</th><th className="px-3 py-3">Plastic Hardware Key</th></tr></thead>
                 <tbody className="divide-y divide-[#313540]/70 text-[12px]">
-                  {[
-                    ['Biometric Pin Authorization', 'Sub-200ms Capacitive', 'None (Manual pull)', 'PIN Buttons (Vulnerable)'],
-                    ['Asset Geolocation Tracking', 'Native Apple Find My', 'None', 'None'],
-                    ['Enclave Certification', 'Common Criteria EAL6+', 'N/A', 'EAL5+ Standard'],
-                    ['Material Composition', 'Grade 5 Titanium CNC', 'Aluminum Alloy / PU Leather', 'Molded Polycarbonate'],
-                    ['Liquid Submersion Rating', 'IP68 (6m depth 24h)', 'Unrated', 'Non-waterproof'],
-                  ].map((row) => <tr key={row[0]}><td className="px-3 py-3.5 font-semibold text-[#e2e4eb]">{row[0]}</td><td className="px-3 py-3.5 font-display font-semibold text-[#facc15]">{row[1]}</td><td className="px-3 py-3.5 text-[#a4a9b7]">{row[2]}</td><td className="px-3 py-3.5 text-[#a4a9b7]">{row[3]}</td></tr>)}
+                  {comparisonRows.map(([capability, klyph, standard, hardware]) => (
+                    <tr key={capability}><td className="px-3 py-3.5 font-semibold text-[#e2e4eb]">{capability}</td><td className="px-3 py-3.5 font-display font-semibold text-[#facc15]">{klyph}</td><td className="px-3 py-3.5 text-[#a4a9b7]">{standard}</td><td className="px-3 py-3.5 text-[#a4a9b7]">{hardware}</td></tr>
+                  ))}
                 </tbody>
               </table>
             </div>

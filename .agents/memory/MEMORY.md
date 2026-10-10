@@ -1,0 +1,1 @@
+- [KLYPH responsive layout](klyph-responsive-layout.md) — Keep hero metric tiles clear of the product image and verify the full page at phone, tablet, and desktop widths.

@@ -31,6 +31,8 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+artifacts/klyph-store/test-results/
+artifacts/klyph-store/playwright-report/
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log

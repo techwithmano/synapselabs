@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "KLYPH — Biometric Sovereign Vault"
+description = "A premium KLYPH biometric hardware wallet storefront with client-side product finish selection, live KWD/USD pricing, an interactive cart, and a demo checkout."
+version = "1.0.0"
+id = "artifacts/klyph-store"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25830
+
+[services.development]
+run = "pnpm --filter @workspace/klyph-store run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/klyph-store", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/klyph-store/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25830"
+BASE_PATH = "/"

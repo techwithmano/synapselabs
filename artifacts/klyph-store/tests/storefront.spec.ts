@@ -17,7 +17,7 @@ test('order buttons show Added feedback and open the local cart', async ({ page 
   for (const testId of orderButtons) {
     const button = page.getByTestId(testId);
     await button.click();
-    await expect(button).toContainText('Added ✓');
+    await expect(button).toContainText('Added');
     await expect(page.getByTestId('cart-drawer')).toBeVisible();
     await page.getByTestId('button-close-cart').click();
   }

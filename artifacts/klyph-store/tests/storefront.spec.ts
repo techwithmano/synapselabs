@@ -98,3 +98,60 @@ test('all finish swatches update the active finish and the selected cart variant
     'Raw Titanium',
   );
 });
+
+for (const width of [320, 375, 402, 768, 1023, 1024, 1440]) {
+  test(`keeps visible content within the viewport at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+
+    const overflowingText = await page.evaluate(() => {
+      const viewportWidth = document.documentElement.clientWidth;
+      return Array.from(document.body.querySelectorAll<HTMLElement>('*'))
+        .filter((element) => {
+          if (!element.textContent?.trim()) return false;
+          const style = window.getComputedStyle(element);
+          if (
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            Number(style.opacity) === 0
+          ) {
+            return false;
+          }
+
+          const rect = element.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return false;
+          return rect.left < -1 || rect.right > viewportWidth + 1;
+        })
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          text: element.textContent?.trim().replace(/\s+/g, ' ').slice(0, 80),
+          left: Math.round(element.getBoundingClientRect().left),
+          right: Math.round(element.getBoundingClientRect().right),
+        }))
+        .slice(0, 10);
+    });
+
+    expect(
+      overflowingText,
+      `Visible text should stay within the ${width}px viewport`,
+    ).toEqual([]);
+    await expect(page.locator('html')).toHaveJSProperty(
+      'scrollWidth',
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+
+    const comparisonCards = page.locator(
+      '#comparison [aria-label="Comparison metrics"]',
+    );
+    const comparisonTable = page.getByTestId('table-comparison');
+    if (width < 1024) {
+      await expect(comparisonCards).toBeVisible();
+      await expect(comparisonTable).toBeHidden();
+    } else {
+      await expect(comparisonCards).toBeHidden();
+      await expect(comparisonTable).toBeVisible();
+    }
+  });
+}

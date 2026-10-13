@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByTestId('text-price-pro')).toHaveText('29 KWD', {
+    timeout: 20_000,
+  });
 });
 
 test('order buttons show Added feedback and open the local cart', async ({ page }) => {
@@ -20,6 +23,7 @@ test('order buttons show Added feedback and open the local cart', async ({ page 
     await expect(button).toContainText('Added');
     await expect(page.getByTestId('cart-drawer')).toBeVisible();
     await page.getByTestId('button-close-cart').click();
+    await expect(page.getByTestId('cart-overlay')).toHaveCount(0);
   }
 });
 
@@ -28,9 +32,16 @@ test('cart groups matching products, updates quantities, and recalculates subtot
 }) => {
   await page.getByTestId('button-add-pro').click();
   await page.getByTestId('button-close-cart').click();
+  await expect(page.getByTestId('cart-overlay')).toHaveCount(0);
   await page.getByTestId('button-add-pro').click();
   await page.getByTestId('button-close-cart').click();
+  await expect(page.getByTestId('cart-overlay')).toHaveCount(0);
   await page.getByTestId('button-add-air').click();
+  await page.waitForFunction(() => {
+    const drawer = document.querySelector('[data-testid="cart-drawer"]');
+    return drawer !== null &&
+      Math.abs(drawer.getBoundingClientRect().right - window.innerWidth) < 1;
+  });
 
   await expect(page.getByTestId('text-cart-count')).toHaveText('3');
   await expect(
@@ -104,7 +115,6 @@ for (const width of [320, 375, 402, 768, 1023, 1024, 1440]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto('/');
 
     const overflowingText = await page.evaluate(() => {
       const viewportWidth = document.documentElement.clientWidth;

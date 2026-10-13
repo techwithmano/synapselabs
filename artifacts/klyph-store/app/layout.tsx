@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'KLYPH — Biometric Sovereign Vault',
   description:
     'Precision biometric security, titanium hardware, and cold storage for everyday carry.',
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({

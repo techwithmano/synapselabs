@@ -148,6 +148,12 @@
 .lr-table tbody td { color: #72869c; }
 .lr-table tbody td:nth-child(2) { color: var(--lr-blue); font-weight: 700; }
 .lr-compare-mobile { display: none; }
+.lr-compare-mobile article { padding: 12px; border: 1px solid var(--lr-line); border-radius: 8px; background: #fff; }
+.lr-compare-mobile h3 { margin: 0 0 9px; font-size: 11px; }
+.lr-compare-mobile article div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid #edf1f6; font-size: 8px; }
+.lr-compare-mobile b { color: #8395aa; font-weight: 600; }
+.lr-compare-mobile article div:first-of-type b, .lr-compare-mobile article div:first-of-type span { color: var(--lr-blue); font-weight: 700; }
+.lr-compare-mobile span { text-align: right; color: #667b94; }
 .lr-allocation { padding: 58px 0 54px; background: #edf3fb; border-block: 1px solid #dfe8f3; }
 .lr-allocation-inner { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 44px; }
 .lr-allocation h2 { margin-top: 9px; font-size: clamp(35px,4vw,48px); }
@@ -221,6 +227,10 @@
 .lr-payment-success b { color: var(--lr-blue); font-size: 12px; }
 .lr-payment-success p { margin: 3px 0 0; color: #73869c; font-size: 9px; line-height: 1.5; }
 
+@media (max-width: 1023px) {
+  .lr-table-scroll { display: none; }
+  .lr-compare-mobile { display: grid; gap: 9px; }
+}
 @media (max-width: 900px) {
   .lr-wrap { width: min(100% - 42px, 700px); }
   .lr-links { gap: 18px; }
@@ -299,14 +309,6 @@
   .lr-telemetry { margin-top: 14px; }
   .lr-compare { padding-top: 56px; padding-bottom: 56px; }
   .lr-compare h2 { font-size: 33px; }
-  .lr-table-scroll { display: none; }
-  .lr-compare-mobile { display: grid; gap: 9px; }
-  .lr-compare-mobile article { padding: 12px; border: 1px solid var(--lr-line); border-radius: 8px; background: #fff; }
-  .lr-compare-mobile h3 { margin: 0 0 9px; font-size: 11px; }
-  .lr-compare-mobile article div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid #edf1f6; font-size: 8px; }
-  .lr-compare-mobile b { color: #8395aa; font-weight: 600; }
-  .lr-compare-mobile article div:first-of-type b, .lr-compare-mobile article div:first-of-type span { color: var(--lr-blue); font-weight: 700; }
-  .lr-compare-mobile span { text-align: right; color: #667b94; }
   .lr-allocation { padding: 40px 0; }
   .lr-allocation-inner { grid-template-columns: 1fr; gap: 19px; }
   .lr-allocation h2 { font-size: 39px; }

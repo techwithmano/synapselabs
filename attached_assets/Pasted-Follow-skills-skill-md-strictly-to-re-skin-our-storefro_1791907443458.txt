@@ -1,0 +1,42 @@
+Follow `skills/skill.md` strictly to re-skin our storefront and complete the remaining Day 4 requirements (Steps 3, 4, 5, 6, 7, and 8).
+
+### 1. New Brand & Design System: "SYNAPSE LABS"
+Transform the storefront into "SYNAPSE LABS" — a minimalist neuro-wearable & spatial hardware brand.
+- Theme:
+  - Background: Crisp porcelain white (#FFFFFF) and light slate (#F8FAFC).
+  - Typography & Borders: Deep Obsidian Navy (#0F172A) headers/text with ultra-clean 1px borders (#E2E8F0).
+  - Accents: Electric Cobalt Blue (#2563EB) for buttons, status dots, and active states.
+- Style: Minimal text, heavy visual focus, sleek product cards, and generous whitespace per instructor feedback.
+
+### 2. Database Models & Seed Data (`lib/db.ts` & `models/`):
+Ensure Mongoose models match SKILL.md exactly:
+- `models/User.ts`: name, email (unique, lowercase), passwordHash, createdAt.
+- `models/Product.ts`: name, description, price, image, category, createdAt.
+- `models/Order.ts`: user (ref User), items [{ product, quantity, price }], total, status (enum: 'pending', 'paid', default 'pending'), createdAt.
+
+Update `/api/products`:
+- Clear and re-seed the Product collection if empty with these 3 Synapse Labs flagship devices:
+  1. "Synapse Core Ring" | Price: 18 KWD | Category: Wearables | Image: https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80 | Description: Matte ceramic biometric pulse and neural telemetry band.
+  2. "Aura Spatial Clip" | Price: 26 KWD | Category: Audio | Image: https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80 | Description: Titanium bone-conduction spatial audio and voice interface.
+  3. "NeuroDock Magnetic Slate" | Price: 14 KWD | Category: Power | Image: https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&auto=format&fit=crop&q=80 | Description: High-speed inductive ceramic charging plate with cobalt status ring.
+
+### 3. Authentication (Steps 5, 6, 7 per SKILL.md):
+- Password Security: Use bcryptjs to hash passwords with salt rounds of 10. Passwords must be at least 8 characters. Never store or return raw passwords.
+- JWT Session: Sign JWT using `process.env.JWT_SECRET` and set it inside an `httpOnly`, Secure, SameSite cookie named `token`.
+- Routes:
+  - `POST /api/auth/signup`: Validates input, hashes password, saves user to DB, and logs them in via httpOnly cookie.
+  - `POST /api/auth/login`: Validates credentials, verifies hash with bcrypt, sets httpOnly cookie, returns user data without passwordHash.
+  - `POST /api/auth/logout`: Clears the auth cookie.
+  - `GET /api/auth/me`: Reads httpOnly cookie, verifies token, returns current user profile { id, name, email }.
+- UI:
+  - Clean auth modal or pages (/login and /signup) matching the Synapse white/cobalt aesthetic.
+  - Navbar: If logged in, display the user's name, a [My Orders] link, and a [Log Out] button. If logged out, display [Sign In].
+
+### 4. Bonus Challenge: Protected Route & User Isolation (Step 8):
+- Create `/orders` page and `GET /api/orders`:
+  - Verify JWT from the httpOnly cookie. Return 401 Unauthorized if missing/invalid.
+  - Query orders strictly by `user: currentUserId` so each user only sees their own past orders.
+  - Allow logged-in users to place an order from their cart (`POST /api/orders`), saving it to MongoDB as 'pending' or 'paid'.
+  - If a guest visits `/orders`, redirect them to log in.
+
+Ensure the entire build compiles cleanly with zero hydration warnings.

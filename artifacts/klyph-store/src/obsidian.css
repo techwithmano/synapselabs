@@ -90,6 +90,10 @@
 .lr-table th, .lr-table td { border-bottom-color: #303643; }
 .lr-table thead th { color: #b3bbc8; }
 .lr-table tbody td { color: #a3adbd; }
+.lr-compare-mobile article { border-color: #303643; background: #171b26; }
+.lr-compare-mobile article div { border-top-color: #303643; }
+.lr-compare-mobile b { color: #a3adbd; }
+.lr-compare-mobile span { color: #b2bac7; }
 .lr-allocation {
   background: linear-gradient(110deg, #151923, #111620 58%, #17180f);
   border-block-color: #30323a;

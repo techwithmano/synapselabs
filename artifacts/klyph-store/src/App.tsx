@@ -201,7 +201,7 @@ function App() {
               <div className="lr-hero-aside">
                 <p>A titanium biometric wallet, built for everyday carry and cold storage.</p>
                 <div className="lr-hero-actions">
-                  <button type="button" onClick={() => addToCart('pro', 'hero-order')} className="lr-button lr-button-blue" data-testid="button-hero-order">
+                  <button type="button" disabled={!heroProduct} onClick={() => addToCart('pro', 'hero-order')} className="lr-button lr-button-blue" data-testid="button-hero-order">
                     <Fingerprint size={17} />{addedButton === 'hero-order' ? 'Added' : heroProduct ? `${heroProduct.name} · ${formatPrice(heroProduct.price)}` : productsLoading ? 'Loading KLYPH Pro…' : 'KLYPH Pro unavailable'}<ArrowRight size={16} />
                   </button>
                   <a className="lr-text-link" href="#architecture">Explore security <ChevronRight size={15} /></a>
@@ -274,7 +274,7 @@ function App() {
               <tbody>{comparisonRows.map(([capability, klyph, standard, hardware]) => <tr key={capability}><th>{capability}</th><td>{klyph}</td><td>{standard}</td><td>{hardware}</td></tr>)}</tbody>
             </table>
           </div>
-          <div className="lr-compare-mobile">
+          <div className="lr-compare-mobile" role="region" aria-label="Comparison metrics">
             {comparisonRows.map(([capability, klyph, standard, hardware]) => <article key={capability}><h3>{capability}</h3><div><b>KLYPH Pro</b><span>{klyph}</span></div><div><b>Standard RFID Wallet</b><span>{standard}</span></div><div><b>Plastic Hardware Key</b><span>{hardware}</span></div></article>)}
           </div>
         </section>
@@ -319,7 +319,7 @@ function App() {
       <AnimatePresence>
         {isCartOpen && <motion.div className="lr-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .18 }} data-testid="cart-overlay">
           <button type="button" className="lr-backdrop" aria-label="Close shopping cart" onClick={() => setIsCartOpen(false)} data-testid="button-cart-backdrop" />
-          <motion.aside role="dialog" aria-modal="true" aria-labelledby="cart-heading" className="lr-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }} data-testid="cart-drawer">
+          <motion.aside role="dialog" aria-modal="true" aria-labelledby="cart-heading" className="lr-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%', transition: { type: 'tween', duration: .18, ease: 'easeIn' } }} transition={{ type: 'spring', damping: 30, stiffness: 280 }} data-testid="cart-drawer">
             <div className="lr-drawer-head"><div><div className="lr-kicker">KLYPH / Checkout</div><h2 id="cart-heading">Your cart <span>({itemCount})</span></h2></div><button ref={closeRef} type="button" aria-label="Close cart" onClick={() => setIsCartOpen(false)} className="lr-close" data-testid="button-close-cart"><X size={20} /></button></div>
             <div className="lr-drawer-body">
               {cartItems.length === 0 ? <div className="lr-empty"><div className="lr-empty-icon"><ShoppingBag size={23} /></div><h3>Your vault is waiting.</h3><p>Choose an instrument from the collection to begin.</p><button type="button" onClick={() => { setIsCartOpen(false); document.getElementById('vault-catalog')?.scrollIntoView({ behavior: 'smooth' }); }} data-testid="button-empty-shop">Explore collection <ArrowRight size={14} /></button></div> : <div className="lr-cart-lines">

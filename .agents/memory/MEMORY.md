@@ -1,1 +1,2 @@
 - [KLYPH responsive layout](klyph-responsive-layout.md) — Keep hero metric tiles clear of the product image and verify the full page at phone, tablet, and desktop widths.
+- [Next App Router root selection](next-app-router-root-selection.md) — Move legacy `src/pages` out of the way when the App Router is rooted at `app/`.

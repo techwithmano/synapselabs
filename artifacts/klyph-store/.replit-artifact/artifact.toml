@@ -1,14 +1,14 @@
 kind = "web"
 previewPath = "/"
-title = "KLYPH — Biometric Sovereign Vault"
-description = "A premium KLYPH biometric hardware wallet storefront with database-backed products, live KWD/USD pricing, an interactive cart, and a demo checkout."
+title = "SYNAPSE LABS — Considered Technology"
+description = "Biometric sensing, spatial audio, and magnetic power for everyday life, with secure accounts and order history."
 version = "1.0.0"
 id = "artifacts/klyph-store"
 router = "path"
 
 [[services]]
 name = "web"
-paths = ["/", "/api/products"]
+paths = ["/", "/api/products", "/api/auth", "/api/orders", "/login", "/signup", "/orders"]
 localPort = 25830
 
 [services.development]

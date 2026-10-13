@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import '../src/index.css';
-import '../src/LightRefresh.css';
-import '../src/obsidian.css';
+import '../src/synapse.css';
 
 export const metadata: Metadata = {
-  title: 'KLYPH — Biometric Sovereign Vault',
-  description:
-    'Precision biometric security, titanium hardware, and cold storage for everyday carry.',
+  title: 'SYNAPSE LABS — Considered Technology',
+  description: 'Biometric sensing, spatial audio, and magnetic power for everyday life.',
   icons: { icon: '/favicon.svg' },
 };
 

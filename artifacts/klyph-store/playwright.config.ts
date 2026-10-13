@@ -17,7 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'PORT=4179 BASE_PATH=/ pnpm exec vite --config vite.config.ts --host 127.0.0.1',
+      'PORT=4179 NEXT_TELEMETRY_DISABLED=1 pnpm exec next dev --hostname 127.0.0.1 --port 4179',
     url: 'http://127.0.0.1:4179',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

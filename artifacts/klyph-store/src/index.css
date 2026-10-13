@@ -6,8 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: #fbfdff;
-  --color-foreground: #15345a;
+  --color-background: #0a0e18;
+  --color-foreground: #dfe2f1;
   --font-sans: var(--app-font-sans);
   --font-mono: var(--app-font-mono);
   --radius-sm: 4px;
@@ -16,41 +16,41 @@
 }
 
 :root, .dark {
-  color-scheme: light;
-  --background: 210 50% 99%;
-  --foreground: 213 60% 22%;
-  --border: 214 40% 89%;
-  --input: 214 40% 89%;
-  --ring: 222 70% 49%;
-  --card: 0 0% 100%;
-  --card-foreground: 213 60% 22%;
-  --card-border: 214 40% 89%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 213 60% 22%;
-  --popover-border: 214 40% 89%;
-  --primary: 222 70% 49%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 214 50% 96%;
-  --secondary-foreground: 213 60% 22%;
-  --muted: 214 50% 96%;
-  --muted-foreground: 213 20% 49%;
-  --accent: 214 50% 96%;
-  --accent-foreground: 213 60% 22%;
+  color-scheme: dark;
+  --background: 224 35% 7%;
+  --foreground: 225 24% 91%;
+  --border: 222 18% 22%;
+  --input: 222 18% 22%;
+  --ring: 46 100% 50%;
+  --card: 222 27% 11%;
+  --card-foreground: 225 24% 91%;
+  --card-border: 222 18% 22%;
+  --popover: 222 27% 11%;
+  --popover-foreground: 225 24% 91%;
+  --popover-border: 222 18% 22%;
+  --primary: 46 100% 50%;
+  --primary-foreground: 224 35% 7%;
+  --secondary: 222 22% 16%;
+  --secondary-foreground: 225 24% 91%;
+  --muted: 222 22% 16%;
+  --muted-foreground: 219 12% 63%;
+  --accent: 222 22% 16%;
+  --accent-foreground: 225 24% 91%;
   --destructive: 0 62% 48%;
   --destructive-foreground: 0 0% 100%;
-  --chart-1: 222 70% 49%;
-  --chart-2: 213 30% 56%;
-  --chart-3: 215 45% 33%;
-  --chart-4: 200 35% 50%;
-  --chart-5: 225 70% 70%;
-  --sidebar: 210 50% 99%;
-  --sidebar-foreground: 213 60% 22%;
-  --sidebar-border: 214 40% 89%;
-  --sidebar-primary: 222 70% 49%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 214 50% 96%;
-  --sidebar-accent-foreground: 213 60% 22%;
-  --sidebar-ring: 222 70% 49%;
+  --chart-1: 46 100% 50%;
+  --chart-2: 42 90% 60%;
+  --chart-3: 225 24% 72%;
+  --chart-4: 219 12% 63%;
+  --chart-5: 222 18% 34%;
+  --sidebar: 224 35% 7%;
+  --sidebar-foreground: 225 24% 91%;
+  --sidebar-border: 222 18% 22%;
+  --sidebar-primary: 46 100% 50%;
+  --sidebar-primary-foreground: 224 35% 7%;
+  --sidebar-accent: 222 22% 16%;
+  --sidebar-accent-foreground: 225 24% 91%;
+  --sidebar-ring: 46 100% 50%;
   --app-font-sans: 'Inter', sans-serif;
   --app-font-mono: 'Space Grotesk', monospace;
   --app-font-serif: Georgia, serif;
@@ -65,8 +65,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 body {
   margin: 0;
   min-width: 320px;
-  background: #fbfdff;
-  color: #15345a;
+  background: #0a0e18;
+  color: #dfe2f1;
   font-family: var(--app-font-sans);
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
@@ -74,8 +74,8 @@ body {
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 a { color: inherit; text-decoration: none; }
-button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid #2459d6; outline-offset: 3px; }
-::selection { color: #ffffff; background: #2459d6; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid #eab308; outline-offset: 3px; }
+::selection { color: #0a0e18; background: #eab308; }
 
 .font-display { font-family: 'Space Grotesk', sans-serif; }
 .mono { font-family: 'Space Grotesk', monospace; letter-spacing: .035em; }

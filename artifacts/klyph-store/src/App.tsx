@@ -1,5 +1,6 @@
-import './LightRefresh.css';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, Check, ChevronRight, CreditCard,
@@ -10,34 +11,55 @@ import {
 type Currency = 'KWD' | 'USD';
 type Finish = 'Matte Black' | 'Stealth Navy' | 'Raw Titanium';
 type Product = {
-  id: string; name: string; price: number; description: string; specs: string[];
+  id: string; name: string; price: number; description: string; category: string; specs: string[];
   image: string; alt: string; badge: string; stock: string; tone: 'gold' | 'quiet';
 };
+type ProductRecord = {
+  _id: string; name: string; description: string; price: number; image: string; category: string;
+};
+type ProductPresentation = Pick<Product, 'id' | 'alt' | 'badge' | 'stock' | 'tone' | 'specs'>;
 type CartLine = { productId: string; finish: Finish; quantity: number };
 
-const products: Product[] = [
-  {
-    id: 'pro', name: 'KLYPH Pro', price: 29,
-    description: 'A biometric titanium wallet with Apple Find My and instant ejection.',
-    specs: ['Biometric', '8 cards'],
-    image: '/images/klyph-pro.webp', alt: 'KLYPH Pro monolithic titanium biometric vault',
-    badge: 'FLAGSHIP', stock: 'In stock · Ships in 24h', tone: 'gold',
+const productPresentation: Record<string, ProductPresentation> = {
+  'KLYPH Pro': {
+    id: 'pro', alt: 'KLYPH Pro monolithic titanium biometric vault',
+    badge: 'FLAGSHIP', stock: 'In stock · Ships in 24h', tone: 'gold', specs: ['Biometric', '8 cards'],
   },
-  {
-    id: 'air', name: 'KLYPH Air', price: 16,
-    description: 'A 4.2mm carbon-fiber sleeve with MagSafe and RFID shielding.',
-    specs: ['3K carbon', 'MagSafe'],
-    image: '/images/klyph-air.webp', alt: 'KLYPH Air ultra-slim carbon fiber wallet',
-    badge: 'ULTRA-SLIM', stock: '4.2mm profile', tone: 'quiet',
+  'KLYPH Air': {
+    id: 'air', alt: 'KLYPH Air ultra-slim carbon fiber wallet',
+    badge: 'ULTRA-SLIM', stock: '4.2mm profile', tone: 'quiet', specs: ['3K carbon', 'MagSafe'],
   },
-  {
-    id: 'vault', name: 'KLYPH Vault', price: 22,
-    description: 'A 316L steel seed vault built to withstand 1400°C.',
-    specs: ['316L steel', '1400°C'],
-    image: '/images/klyph-vault.webp', alt: 'KLYPH Vault steel seed recovery plate',
-    badge: 'MAXIMUM SECURITY', stock: '1400°C blast proof', tone: 'quiet',
+  'KLYPH Vault': {
+    id: 'vault', alt: 'KLYPH Vault steel seed recovery plate',
+    badge: 'MAXIMUM SECURITY', stock: '1400°C blast proof', tone: 'quiet', specs: ['316L steel', '1400°C'],
   },
-];
+};
+function isProductRecord(value: unknown): value is ProductRecord {
+  if (typeof value !== 'object' || value === null) return false;
+  const item = value as Record<string, unknown>;
+  return typeof item._id === 'string' &&
+    typeof item.name === 'string' &&
+    typeof item.description === 'string' &&
+    typeof item.price === 'number' && Number.isFinite(item.price) &&
+    typeof item.image === 'string' &&
+    typeof item.category === 'string';
+}
+function toStoreProduct(record: ProductRecord): Product {
+  const presentation = productPresentation[record.name];
+  return {
+    id: presentation?.id ?? record._id,
+    name: record.name,
+    description: record.description,
+    price: record.price,
+    image: record.image,
+    category: record.category,
+    alt: presentation?.alt ?? record.name,
+    badge: presentation?.badge ?? record.category,
+    stock: presentation?.stock ?? 'Available',
+    tone: presentation?.tone ?? 'quiet',
+    specs: presentation?.specs ?? [],
+  };
+}
 const finishes: { name: Finish; color: string }[] = [
   { name: 'Matte Black', color: '#171717' },
   { name: 'Stealth Navy', color: '#0f172a' },
@@ -53,6 +75,9 @@ const comparisonRows = [
 const usdRate = 95 / 29;
 
 function App() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
   const [currency, setCurrency] = useState<Currency>('KWD');
   const [selected, setSelected] = useState<Record<string, Finish>>({
     pro: 'Matte Black', air: 'Matte Black', vault: 'Raw Titanium',
@@ -65,11 +90,32 @@ function App() {
   const [email, setEmail] = useState('');
   const [whitepaperOpen, setWhitepaperOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const loadProducts = useCallback(async () => {
+    setProductsLoading(true);
+    setProductsError(null);
+    try {
+      const response = await fetch('/api/products', { cache: 'no-store' });
+      const payload: unknown = await response.json();
+      if (!response.ok || !Array.isArray(payload) || !payload.every(isProductRecord)) {
+        throw new Error('Invalid product response');
+      }
+      setProducts(payload.map(toStoreProduct));
+    } catch {
+      setProducts([]);
+      setProductsError('Products could not be loaded. Please try again.');
+    } finally {
+      setProductsLoading(false);
+    }
+  }, []);
+  useEffect(() => { void loadProducts(); }, [loadProducts]);
+
+  const heroProduct = products.find((product) => product.id === 'pro');
+  const airProduct = products.find((product) => product.id === 'air');
   const itemCount = cartItems.reduce((sum, line) => sum + line.quantity, 0);
   const subtotal = useMemo(() => cartItems.reduce((sum, line) => {
     const product = products.find((item) => item.id === line.productId);
     return sum + (product?.price ?? 0) * line.quantity;
-  }, 0), [cartItems]);
+  }, 0), [cartItems, products]);
 
   useEffect(() => {
     if (!isCartOpen) return;
@@ -98,6 +144,7 @@ function App() {
     ? `${kwd.toFixed(0)} KWD`
     : `$${Math.round(kwd * usdRate)} USD`;
   const addToCart = (productId: string, buttonId: string) => {
+    if (!products.some((product) => product.id === productId)) return;
     const finish = selected[productId] ?? 'Matte Black';
     setCartItems((current) => {
       const existing = current.find((line) => line.productId === productId && line.finish === finish);
@@ -138,7 +185,7 @@ function App() {
             <button type="button" onClick={() => setIsCartOpen(true)} aria-label={`Shopping cart, ${itemCount} items`} className="lr-cart-icon" data-testid="button-open-cart">
               <ShoppingBag size={18} /><span data-testid="text-cart-count">{itemCount}</span>
             </button>
-            <button type="button" onClick={() => addToCart('pro', 'pre-order')} className="lr-nav-order" data-testid="button-pre-order">
+            <button type="button" disabled={!heroProduct} onClick={() => addToCart('pro', 'pre-order')} className="lr-nav-order" data-testid="button-pre-order">
               {addedButton === 'pre-order' ? 'Added' : 'Pre-order'}
             </button>
           </div>
@@ -155,15 +202,15 @@ function App() {
                 <p>A titanium biometric wallet, built for everyday carry and cold storage.</p>
                 <div className="lr-hero-actions">
                   <button type="button" onClick={() => addToCart('pro', 'hero-order')} className="lr-button lr-button-blue" data-testid="button-hero-order">
-                    <Fingerprint size={17} />{addedButton === 'hero-order' ? 'Added' : `KLYPH Pro · ${formatPrice(29)}`}<ArrowRight size={16} />
+                    <Fingerprint size={17} />{addedButton === 'hero-order' ? 'Added' : heroProduct ? `${heroProduct.name} · ${formatPrice(heroProduct.price)}` : productsLoading ? 'Loading KLYPH Pro…' : 'KLYPH Pro unavailable'}<ArrowRight size={16} />
                   </button>
                   <a className="lr-text-link" href="#architecture">Explore security <ChevronRight size={15} /></a>
                 </div>
               </div>
             </div>
             <figure className="lr-hero-visual">
-              <img src="/images/klyph-pro.webp" alt="KLYPH Pro titanium biometric wallet, precision machined in black titanium" data-testid="img-hero-product" />
-              <figcaption><span><i /> KLYPH PRO / GEN 2.4</span><span>SHA-256 verified firmware</span></figcaption>
+              {heroProduct ? <img src={heroProduct.image} alt={heroProduct.alt} data-testid="img-hero-product" /> : <div aria-hidden="true" className={`lr-hero-image-placeholder ${productsLoading ? 'lr-skeleton' : ''}`} />}
+              {heroProduct && <figcaption><span><i /> {heroProduct.name.toUpperCase()} / GEN 2.4</span><span>SHA-256 verified firmware</span></figcaption>}
             </figure>
             <div className="lr-hero-specs" aria-label="KLYPH Pro specifications">
               <Metric title="Biometric unlock" value="0.18s" detail="Capacitive sensor" />
@@ -189,13 +236,19 @@ function App() {
             <div><div className="lr-kicker">The collection</div><h2>Three forms.<br className="lr-mobile-break" /> One standard.</h2></div>
             <p>Precision security, made for the way you carry.</p>
           </div>
-          <div className="lr-products">
-            {products.map((product) => <ProductCard
+          <div className="lr-products" aria-busy={productsLoading}>
+            {productsLoading
+              ? Array.from({ length: 3 }, (_, index) => <ProductSkeleton key={index} />)
+              : productsError
+                ? <div className="lr-products-error" role="alert"><p>{productsError}</p><button type="button" onClick={() => void loadProducts()}>Retry</button></div>
+                : products.length
+                  ? products.map((product) => <ProductCard
               key={product.id} product={product} selected={selected[product.id] ?? 'Matte Black'}
               currencyPrice={formatPrice(product.price)} added={addedButton === `add-${product.id}`}
               onSelect={(finish) => setSelected((current) => ({ ...current, [product.id]: finish }))}
               onAdd={() => addToCart(product.id, `add-${product.id}`)}
-            />)}
+            />)
+                  : <p className="lr-products-empty" role="status">No products are currently available.</p>}
           </div>
         </section>
 
@@ -230,7 +283,7 @@ function App() {
           <div className="lr-wrap lr-allocation-inner">
             <div><div className="lr-kicker">Limited allocation · Batch 04</div><h2>Carry what matters.</h2><p>Express armored dispatch. Two-year titanium replacement.</p></div>
             <div className="lr-allocation-actions">
-              <button type="button" onClick={() => addToCart('air', 'claim-allocation')} className="lr-button lr-button-blue" data-testid="button-claim-allocation">{addedButton === 'claim-allocation' ? <><Check size={17} /> Added</> : <><LockKeyhole size={17} /> From {formatPrice(16)} <ArrowRight size={16} /></>}</button>
+              <button type="button" disabled={!airProduct} onClick={() => addToCart('air', 'claim-allocation')} className="lr-button lr-button-blue" data-testid="button-claim-allocation">{addedButton === 'claim-allocation' ? <><Check size={17} /> Added</> : <><LockKeyhole size={17} /> {airProduct ? `From ${formatPrice(airProduct.price)}` : productsLoading ? 'Loading…' : 'Unavailable'} <ArrowRight size={16} /></>}</button>
               <button type="button" className="lr-button lr-button-outline" onClick={() => setWhitepaperOpen((open) => !open)} data-testid="button-whitepaper"><ArrowDownRight size={17} />{whitepaperOpen ? 'Close whitepaper' : 'Security whitepaper'}</button>
             </div>
             {whitepaperOpen && <div role="status" className="lr-whitepaper" data-testid="status-whitepaper">Whitepaper v2.4 SHA-256 verified. Firmware dispatch details are ready.</div>}
@@ -271,7 +324,8 @@ function App() {
             <div className="lr-drawer-body">
               {cartItems.length === 0 ? <div className="lr-empty"><div className="lr-empty-icon"><ShoppingBag size={23} /></div><h3>Your vault is waiting.</h3><p>Choose an instrument from the collection to begin.</p><button type="button" onClick={() => { setIsCartOpen(false); document.getElementById('vault-catalog')?.scrollIntoView({ behavior: 'smooth' }); }} data-testid="button-empty-shop">Explore collection <ArrowRight size={14} /></button></div> : <div className="lr-cart-lines">
                 {cartItems.map((line) => {
-                  const product = products.find((item) => item.id === line.productId)!;
+                  const product = products.find((item) => item.id === line.productId);
+                  if (!product) return null;
                   return <div key={`${line.productId}-${line.finish}`} className="lr-cart-line" data-testid={`row-cart-${line.productId}-${line.finish.toLowerCase().replaceAll(' ', '-')}`}>
                     <img src={product.image} alt={product.alt} />
                     <div className="lr-line-info"><div className="lr-line-title"><div><h3>{product.name}</h3><p>{line.finish}</p></div><strong data-testid={`text-line-price-${line.productId}`}>{formatPrice(product.price * line.quantity)}</strong></div>
@@ -305,7 +359,7 @@ function ProductCard({ product, selected, currencyPrice, added, onSelect, onAdd 
 }) {
   return <article className="lr-product" data-testid={`card-product-${product.id}`}>
     <div className="lr-product-image">
-      <img src={product.image} alt={product.alt} className={selected === 'Stealth Navy' ? 'finish-navy' : selected === 'Raw Titanium' ? 'finish-titanium' : ''} data-testid={`img-product-${product.id}`} />
+      <img src={product.image} alt={product.alt} loading="lazy" decoding="async" className={selected === 'Stealth Navy' ? 'finish-navy' : selected === 'Raw Titanium' ? 'finish-titanium' : ''} data-testid={`img-product-${product.id}`} />
       <span className="lr-product-badge">{product.badge}</span><span className="lr-product-stock">{product.stock}</span>
     </div>
     <div className="lr-product-content">
@@ -314,6 +368,19 @@ function ProductCard({ product, selected, currencyPrice, added, onSelect, onAdd 
       <div className="lr-product-specs">{product.specs.map((spec) => <span key={spec}>{spec}</span>)}</div>
       <div className="lr-finish-row"><div><span>Finish</span><b data-testid={`text-finish-${product.id}`}>{selected}</b></div><div className="lr-swatches">{finishes.map((finish) => <button key={finish.name} type="button" title={finish.name} aria-label={`${product.name} finish: ${finish.name}`} aria-pressed={selected === finish.name} onClick={() => onSelect(finish.name)} style={{ backgroundColor: finish.color }} data-testid={`button-finish-${product.id}-${finish.name.toLowerCase().replaceAll(' ', '-')}`} />)}</div></div>
       <button type="button" onClick={onAdd} className={`lr-add ${product.tone === 'gold' ? 'lr-add-primary' : ''}`} data-testid={`button-add-${product.id}`}>{added ? <Check size={16} /> : <ShoppingBag size={16} />}{added ? 'Added' : `Add to cart · ${currencyPrice}`}</button>
+    </div>
+  </article>;
+}
+function ProductSkeleton() {
+  return <article className="lr-product lr-product-skeleton" aria-hidden="true">
+    <div className="lr-product-image"><div className="lr-skeleton lr-product-skeleton-image" /></div>
+    <div className="lr-product-content">
+      <div className="lr-skeleton lr-skeleton-title" />
+      <div className="lr-skeleton lr-skeleton-copy" />
+      <div className="lr-skeleton lr-skeleton-copy lr-skeleton-copy-short" />
+      <div className="lr-skeleton lr-skeleton-specs" />
+      <div className="lr-skeleton lr-skeleton-finish" />
+      <div className="lr-skeleton lr-skeleton-button" />
     </div>
   </article>;
 }

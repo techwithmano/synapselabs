@@ -69,13 +69,30 @@ test('order APIs reject guests and the orders page sends guests to sign in', asy
 }) => {
   const response = await page.request.get('/api/orders');
   expect(response.status()).toBe(401);
+  const checkoutResponse = await page.request.post('/api/checkout', {
+    data: { items: [{ productId: '000000000000000000000000', quantity: 1 }], currency: 'kwd' },
+  });
+  expect(checkoutResponse.status()).toBe(401);
 
   await page.goto('/orders');
   await expect(page).toHaveURL(/\/login\?next=%2Forders$/);
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
 });
 
-test('accounts can place orders and only see their own order history', async ({ page }) => {
+test('cancel return opens the saved cart and prompts guests to sign in', async ({ page }) => {
+  await page.getByTestId('button-add-synapse-core-ring').click();
+  await page.getByTestId('button-close-cart').click();
+  await page.goto('/cart');
+  await expect(page.getByTestId('cart-drawer')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign in to checkout' })).toHaveAttribute(
+    'href',
+    '/login?next=%2Fcart',
+  );
+});
+
+test('checkout redirects to Stripe and account order history remains isolated', async ({
+  page,
+}) => {
   const unique = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   const firstEmail = `synapse-e2e-${unique}@example.test`;
   await page.goto('/signup');
@@ -91,17 +108,57 @@ test('accounts can place orders and only see their own order history', async ({ 
   expect(sessionCookie?.sameSite).toBe('Lax');
 
   await page.getByTestId('button-add-synapse-core-ring').click();
-  await page.getByTestId('button-place-order').click();
-  await expect(page.getByRole('heading', { name: 'Order placed.' })).toBeVisible();
+  let checkoutPayload: { currency?: string; items?: { quantity: number }[] } | null = null;
+  await page.route('**/api/checkout', async (route) => {
+    checkoutPayload = route.request().postDataJSON() as typeof checkoutPayload;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        url: 'https://checkout.stripe.com/c/pay/cs_test_checkout_mock',
+      }),
+    });
+  });
+  await page.route('https://checkout.stripe.com/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>Hosted checkout mock</title>',
+    });
+  });
+  await page.getByTestId('button-checkout').click();
+  await expect(page).toHaveURL(/checkout\.stripe\.com/);
+  await expect(page).toHaveTitle('Hosted checkout mock');
+  expect(checkoutPayload).toMatchObject({
+    currency: 'kwd',
+    items: [{ quantity: 1 }],
+  });
+
+  await page.goto('/');
+  const catalogResponse = await page.request.get('/api/products');
+  expect(catalogResponse.ok()).toBeTruthy();
+  const catalog = (await catalogResponse.json()) as { _id: string; name: string }[];
+  const coreRing = catalog.find((product) => product.name === 'Synapse Core Ring');
+  expect(coreRing).toBeTruthy();
+  const orderResponse = await page.request.post('/api/orders', {
+    data: { items: [{ productId: coreRing!._id, quantity: 1 }] },
+  });
+  expect(orderResponse.status()).toBe(201);
 
   const firstOrdersResponse = await page.request.get('/api/orders');
   expect(firstOrdersResponse.status()).toBe(200);
   const firstOrders = (await firstOrdersResponse.json()) as {
-    orders: { total: number; status: string; items: { price: number }[] }[];
+    orders: {
+      total: number;
+      currency: string;
+      status: string;
+      items: { price: number }[];
+    }[];
   };
   expect(firstOrders.orders).toHaveLength(1);
   expect(firstOrders.orders[0]).toMatchObject({
     total: 18,
+    currency: 'kwd',
     status: 'pending',
     items: [{ price: 18 }],
   });

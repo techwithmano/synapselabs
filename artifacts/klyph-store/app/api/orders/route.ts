@@ -18,6 +18,7 @@ type LeanOrderItem = {
 type LeanOrder = {
   _id: Types.ObjectId;
   total: number;
+  currency?: string;
   status: 'pending' | 'paid';
   createdAt: Date;
   items: LeanOrderItem[];
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
       orders: orders.map((order) => ({
         id: String(order._id),
         total: order.total,
+        currency: order.currency ?? 'kwd',
         status: order.status,
         createdAt: new Date(order.createdAt).toISOString(),
         items: order.items.map((item) => {
@@ -141,6 +143,7 @@ export async function POST(request: NextRequest) {
         order: {
           id: String(order._id),
           total: order.total,
+          currency: order.currency ?? 'kwd',
           status: order.status,
           createdAt: order.createdAt.toISOString(),
         },

@@ -7,6 +7,7 @@ import { AUTH_COOKIE_NAME, verifyAuthToken } from '@/lib/auth';
 import Order from '@/models/Order';
 import User from '@/models/User';
 import { Types } from 'mongoose';
+import { formatCurrencyAmount, type CheckoutCurrency } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,7 @@ type PopulatedProduct = {
 type OrderRecord = {
   _id: Types.ObjectId;
   total: number;
+  currency?: string;
   status: 'pending' | 'paid';
   createdAt: Date;
   items: {
@@ -27,6 +29,10 @@ type OrderRecord = {
     price: number;
   }[];
 };
+
+function orderCurrency(value?: string): CheckoutCurrency {
+  return value === 'usd' ? 'usd' : 'kwd';
+}
 
 export default async function OrdersPage() {
   const cookieStore = await cookies();
@@ -83,6 +89,7 @@ export default async function OrdersPage() {
                   {order.items.map((item, index) => {
                     const product =
                       item.product && 'name' in item.product ? item.product : null;
+                    const currency = orderCurrency(order.currency);
                     return (
                       <div className="order-line" key={`${String(order._id)}-${index}`}>
                         {product?.image ? (
@@ -94,7 +101,9 @@ export default async function OrdersPage() {
                           <strong>{product?.name ?? 'Unavailable product'}</strong>
                           <span>Qty {item.quantity}</span>
                         </div>
-                        <span className="order-line-price">{item.price * item.quantity} KWD</span>
+                        <span className="order-line-price">
+                          {formatCurrencyAmount(item.price * item.quantity, currency)}
+                        </span>
                       </div>
                     );
                   })}
@@ -107,7 +116,9 @@ export default async function OrdersPage() {
                       day: 'numeric',
                     })}
                   </time>
-                  <strong>{order.total} KWD</strong>
+                  <strong>
+                    {formatCurrencyAmount(order.total, orderCurrency(order.currency))}
+                  </strong>
                 </div>
               </article>
             ))}

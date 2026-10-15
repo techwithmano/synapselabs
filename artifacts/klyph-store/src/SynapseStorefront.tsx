@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { CART_STORAGE_KEY } from '@/lib/cart';
+import {
+  formatCurrencyAmount,
+  getUnitPriceInCurrency,
+  type CheckoutCurrency,
+} from '@/lib/pricing';
 import {
   ArrowRight,
   AudioLines,
@@ -41,17 +47,17 @@ type ApiProduct = {
 };
 type ProductResponse = { error?: string } | ApiProduct[];
 
-const CART_STORAGE_KEY = 'synapse-cart-v1';
-const KWD_TO_USD = 3.27;
-
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+function checkoutCurrency(currency: Currency): CheckoutCurrency {
+  return currency === 'USD' ? 'usd' : 'kwd';
+}
+
 function formatPrice(price: number, currency: Currency): string {
-  return currency === 'USD'
-    ? `$${Math.round(price * KWD_TO_USD)} USD`
-    : `${price} KWD`;
+  const code = checkoutCurrency(currency);
+  return formatCurrencyAmount(getUnitPriceInCurrency(price, code), code);
 }
 
 function categoryIcon(category: string) {
@@ -61,7 +67,11 @@ function categoryIcon(category: string) {
   return <Watch size={19} aria-hidden="true" />;
 }
 
-export default function SynapseStorefront() {
+export default function SynapseStorefront({
+  initialCartOpen = false,
+}: {
+  initialCartOpen?: boolean;
+} = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productError, setProductError] = useState('');
@@ -72,9 +82,8 @@ export default function SynapseStorefront() {
   const [account, setAccount] = useState<Account | null>(null);
   const [accountLoading, setAccountLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
-  const [placingOrder, setPlacingOrder] = useState(false);
+  const [startingCheckout, setStartingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
-  const [orderComplete, setOrderComplete] = useState(false);
   const [addedProduct, setAddedProduct] = useState('');
 
   const loadProducts = useCallback(async () => {
@@ -152,6 +161,10 @@ export default function SynapseStorefront() {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   }, [cart, cartRestored]);
 
+  useEffect(() => {
+    if (initialCartOpen && cartRestored) setCartOpen(true);
+  }, [initialCartOpen, cartRestored]);
+
   const productById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
     [products],
@@ -164,8 +177,10 @@ export default function SynapseStorefront() {
     [cart, productById],
   );
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const currencyCode = checkoutCurrency(currency);
   const subtotal = cartItems.reduce(
-    (sum, line) => sum + line.product.price * line.quantity,
+    (sum, line) =>
+      sum + getUnitPriceInCurrency(line.product.price, currencyCode) * line.quantity,
     0,
   );
   const featuredProduct =
@@ -186,7 +201,6 @@ export default function SynapseStorefront() {
     });
     setAddedProduct(productId);
     setCheckoutError('');
-    setOrderComplete(false);
     setCartOpen(true);
     window.setTimeout(() => setAddedProduct(''), 1400);
   }
@@ -203,12 +217,12 @@ export default function SynapseStorefront() {
     );
   }
 
-  async function placeOrder() {
+  async function startCheckout() {
     if (!account || !cartItems.length) return;
-    setPlacingOrder(true);
+    setStartingCheckout(true);
     setCheckoutError('');
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -216,19 +230,39 @@ export default function SynapseStorefront() {
             productId: line.productId,
             quantity: line.quantity,
           })),
+          currency: currencyCode,
         }),
       });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        setCheckoutError(result.error ?? 'Unable to place your order. Please try again.');
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        url?: string;
+      };
+      if (response.status === 401) {
+        setAccount(null);
+        setCheckoutError(result.error ?? 'Your session expired. Sign in to continue.');
         return;
       }
-      setCart([]);
-      setOrderComplete(true);
+      if (!response.ok) {
+        setCheckoutError(result.error ?? 'Unable to start checkout. Please try again.');
+        return;
+      }
+      if (!result.url) {
+        setCheckoutError('Stripe did not return a checkout link. Please try again.');
+        return;
+      }
+      const checkoutUrl = new URL(result.url);
+      if (
+        checkoutUrl.protocol !== 'https:' ||
+        checkoutUrl.hostname !== 'checkout.stripe.com'
+      ) {
+        setCheckoutError('The secure checkout link could not be verified.');
+        return;
+      }
+      window.location.assign(checkoutUrl.toString());
     } catch {
-      setCheckoutError('Connection issue. Please try again.');
+      setCheckoutError('Connection issue. Please try checkout again.');
     } finally {
-      setPlacingOrder(false);
+      setStartingCheckout(false);
     }
   }
 
@@ -528,16 +562,7 @@ export default function SynapseStorefront() {
             </header>
 
             <div className="cart-body">
-              {orderComplete ? (
-                <div className="cart-success" role="status">
-                  <span className="success-check"><Check size={22} aria-hidden="true" /></span>
-                  <h3>Order placed.</h3>
-                  <p>Your order is saved as pending. You can follow it in your account.</p>
-                  <Link className="text-button" href="/orders">
-                    View my orders <ArrowRight size={15} aria-hidden="true" />
-                  </Link>
-                </div>
-              ) : cartItems.length ? (
+              {cartItems.length ? (
                 <>
                   <div className="cart-lines">
                     {cartItems.map((line) => (
@@ -547,7 +572,11 @@ export default function SynapseStorefront() {
                           <span className="category-label">{line.product.category}</span>
                           <h3>{line.product.name}</h3>
                           <strong data-testid={`text-line-price-${line.product.slug}`}>
-                            {formatPrice(line.product.price * line.quantity, currency)}
+                            {formatCurrencyAmount(
+                              getUnitPriceInCurrency(line.product.price, currencyCode) *
+                                line.quantity,
+                              currencyCode,
+                            )}
                           </strong>
                           <div className="quantity-control">
                             <button
@@ -577,23 +606,25 @@ export default function SynapseStorefront() {
                   <div className="cart-checkout">
                     <div className="cart-subtotal">
                       <span>Subtotal</span>
-                      <strong data-testid="text-cart-subtotal">{formatPrice(subtotal, currency)}</strong>
+                      <strong data-testid="text-cart-subtotal">
+                        {formatCurrencyAmount(subtotal, currencyCode)}
+                      </strong>
                     </div>
                     <p>Shipping and taxes are calculated separately.</p>
                     {account ? (
                       <button
                         className="button-primary place-order-button"
-                        data-testid="button-place-order"
-                        disabled={placingOrder}
-                        onClick={() => void placeOrder()}
+                        data-testid="button-checkout"
+                        disabled={startingCheckout}
+                        onClick={() => void startCheckout()}
                         type="button"
                       >
-                        {placingOrder ? 'Saving order…' : 'Place order'}
-                        {!placingOrder && <ArrowRight size={17} aria-hidden="true" />}
+                        {startingCheckout ? 'Opening secure checkout…' : 'Secure checkout'}
+                        {!startingCheckout && <ArrowRight size={17} aria-hidden="true" />}
                       </button>
                     ) : (
-                      <Link className="button-primary place-order-button" href="/login?next=%2F">
-                        Sign in to place order <ArrowRight size={17} aria-hidden="true" />
+                      <Link className="button-primary place-order-button" href="/login?next=%2Fcart">
+                        Sign in to checkout <ArrowRight size={17} aria-hidden="true" />
                       </Link>
                     )}
                     <div className="cart-currency-switch">

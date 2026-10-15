@@ -15,6 +15,7 @@ const orderSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     items: { type: [orderItemSchema], required: true, default: [] },
     total: { type: Number, required: true, min: 0 },
+    currency: { type: String, enum: ['kwd', 'usd'], default: 'kwd' },
     status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
     createdAt: { type: Date, default: Date.now },
   },

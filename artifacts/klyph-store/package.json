@@ -83,6 +83,7 @@
     "mongoose": "^9.11.1",
     "next": "^15.5.27",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "stripe": "^23.0.0"
   }
 }

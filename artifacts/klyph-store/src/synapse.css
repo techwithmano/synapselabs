@@ -502,7 +502,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 0;
+  overflow: hidden;
   background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0%, var(--synapse-mist) 100%);
   border-bottom: 1px solid var(--synapse-line);
 }

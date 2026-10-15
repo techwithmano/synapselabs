@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { CART_STORAGE_KEY } from '@/lib/cart';
+
+const HeroCanvas3D = dynamic(() => import('./components/HeroCanvas3D'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full animate-pulse bg-slate-100/50 rounded-2xl" />,
+});
 import {
   formatCurrencyAmount,
   getUnitPriceInCurrency,
@@ -407,12 +413,7 @@ export default function SynapseStorefront({
                 FORM / 001 // ENGINEERED IN DETAIL
               </span>
               <div className="hero-stage__viewport">
-                <img
-                  alt={featuredProduct.name}
-                  className="hero-stage__image hero-product-image"
-                  fetchPriority="high"
-                  src="/images/synapse/hero-synapse.svg"
-                />
+                <HeroCanvas3D />
               </div>
               <div className="hero-stage__caption">
                 <div className="hero-caption-icon">{categoryIcon(featuredProduct.category)}</div>

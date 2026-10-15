@@ -103,3 +103,17 @@ Transform "SYNAPSE LABS" inside `artifacts/klyph-store` into a production-grade,
   - `pnpm run typecheck`: 0 errors.
   - `pnpm run build`: 0 errors, 7/7 static routes compiled.
   - `pnpm test:integration`: 41/41 assertions passed.
+
+---
+
+### [x] Phase 7: Interactive 3D WebGL Canvas (`HeroCanvas3D.tsx`)
+- [x] 7.1 Three.js procedural geometry integration:
+  - Outer Torus: `TorusGeometry(2.1, 0.42, 64, 128)` with `MeshPhysicalMaterial` (porcelain zirconia).
+  - Inner Cylinder: `CylinderGeometry(1.68, 1.68, 0.72, 64, 1, true)` with `MeshStandardMaterial` (satin titanium).
+  - Telemetry Slit: `TorusGeometry(2.105, 0.035, 32, 128)` with `MeshBasicMaterial` (electric cobalt `#2563EB`).
+- [x] 7.2 Lighting & Interaction:
+  - Ambient light (1.4), key directional light at `[-4, 6, 5]` (2.2), cobalt rim light at `[5, -2, -4]` (1.8).
+  - Idle rotation (`group.rotation.y += 0.004`) + interactive mouse parallax lerping (factor 0.05).
+  - Clean unmount with geometry/material/renderer context disposal.
+- [x] 7.3 Storefront dynamic integration (`next/dynamic` with SSR disabled).
+- [x] 7.4 Quality verification: 0 TypeScript errors, 0 build errors, 41/41 test assertions passing.

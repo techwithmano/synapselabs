@@ -5,9 +5,9 @@ export const AUTH_COOKIE_NAME = 'token';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
   if (!secret) {
-    throw new Error('JWT_SECRET is not configured on the server.');
+    throw new Error('JWT_SECRET or SESSION_SECRET is not configured on the server.');
   }
   return secret;
 }

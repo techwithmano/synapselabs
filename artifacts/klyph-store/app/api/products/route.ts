@@ -8,23 +8,26 @@ export const dynamic = 'force-dynamic';
 const seedProducts = [
   {
     name: 'Synapse Core Ring',
-    description: 'Matte ceramic biometric pulse and neural telemetry band.',
+    description:
+      'Matte ceramic biometric pulse and neural telemetry band with titanium interior.',
     price: 18,
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80',
+    image: '/images/synapse/synapse-core-ring.svg',
     category: 'Wearables',
   },
   {
     name: 'Aura Spatial Clip',
-    description: 'Titanium bone-conduction spatial audio and voice interface.',
+    description:
+      'Titanium bone-conduction spatial audio and voice interface with acoustic micro-grille.',
     price: 26,
-    image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80',
+    image: '/images/synapse/aura-spatial-clip.svg',
     category: 'Audio',
   },
   {
     name: 'NeuroDock Magnetic Slate',
-    description: 'High-speed inductive ceramic charging plate with cobalt status ring.',
+    description:
+      'High-speed inductive ceramic charging plate with illuminated cobalt status halo.',
     price: 14,
-    image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&auto=format&fit=crop&q=80',
+    image: '/images/synapse/neurodock-slate.svg',
     category: 'Power',
   },
 ];
@@ -36,88 +39,72 @@ const legacyToSeedName: Record<(typeof legacySeedNames)[number], string> = {
   'KLYPH Vault': 'NeuroDock Magnetic Slate',
 };
 
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    error.code === 11000
-  );
-}
+async function syncHardwareProducts() {
+  // 1. Rename any legacy KLYPH items if present
+  const legacyProducts = await Product.find({
+    name: { $in: legacySeedNames },
+  })
+    .select('_id name')
+    .lean();
 
-async function insertMissingProducts(products: typeof seedProducts) {
-  if (!products.length) return;
-
-  try {
-    await Product.insertMany(products);
-  } catch (error) {
-    if (!isDuplicateKeyError(error)) throw error;
-
-    await Product.bulkWrite(
-      products.map((product) => ({
-        updateOne: {
-          filter: { name: product.name },
-          update: { $setOnInsert: product },
-          upsert: true,
-        },
-      })),
-      { ordered: false },
-    );
+  if (legacyProducts.length) {
+    for (const legacy of legacyProducts) {
+      const targetName = legacyToSeedName[legacy.name as (typeof legacySeedNames)[number]];
+      if (targetName) {
+        const existingTarget = await Product.findOne({ name: targetName });
+        if (existingTarget) {
+          await Product.deleteOne({ _id: legacy._id });
+        } else {
+          await Product.updateOne({ _id: legacy._id }, { $set: { name: targetName } });
+        }
+      }
+    }
   }
+
+  // 2. Upsert and synchronize all 3 core products with new SVG assets, prices & descriptions
+  await Product.bulkWrite(
+    seedProducts.map((product) => ({
+      updateOne: {
+        filter: { name: product.name },
+        update: {
+          $set: {
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            category: product.category,
+          },
+          $setOnInsert: {
+            name: product.name,
+          },
+        },
+        upsert: true,
+      },
+    })),
+    { ordered: false },
+  );
 }
 
 export async function GET() {
   try {
     await connectToDatabase();
+    await syncHardwareProducts();
 
-    const productCount = await Product.countDocuments();
-    if (productCount === 0) {
-      await insertMissingProducts(seedProducts);
-    } else {
-      const legacyProducts = await Product.find({
-        name: { $in: legacySeedNames },
-      })
-        .select('_id name')
-        .lean();
+    const products = await Product.find().lean();
 
-      if (legacyProducts.length) {
-        const existingSynapseProducts = await Product.find({
-          name: { $in: seedProducts.map((product) => product.name) },
-        })
-          .select('_id name')
-          .lean();
-        const existingByName = new Map(
-          existingSynapseProducts.map((product) => [product.name, product._id]),
-        );
-        const legacyByName = new Map(
-          legacyProducts.map((product) => [product.name, product._id]),
-        );
-        const missingProducts: typeof seedProducts = [];
+    // Ensure the 3 flagship products appear in exact canonical order (01 Core Ring, 02 Aura Clip, 03 NeuroDock)
+    products.sort((a, b) => {
+      const indexA = seedProducts.findIndex((p) => p.name === a.name);
+      const indexB = seedProducts.findIndex((p) => p.name === b.name);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return String(a._id).localeCompare(String(b._id));
+    });
 
-        for (const product of seedProducts) {
-          const legacyName = legacySeedNames.find(
-            (name) => legacyToSeedName[name] === product.name,
-          );
-          const legacyId = legacyName ? legacyByName.get(legacyName) : undefined;
-          const existingId = existingByName.get(product.name);
-
-          if (existingId) {
-            await Product.updateOne({ _id: existingId }, { $set: product });
-            if (legacyId) await Product.deleteOne({ _id: legacyId });
-          } else if (legacyId) {
-            await Product.updateOne({ _id: legacyId }, { $set: product });
-          } else {
-            missingProducts.push(product);
-          }
-        }
-
-        await insertMissingProducts(missingProducts);
-      }
-    }
-
-    const products = await Product.find().sort({ createdAt: 1, _id: 1 }).lean();
     return NextResponse.json(products, {
-      headers: { 'Cache-Control': 'no-store, max-age=0' },
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      },
     });
   } catch (error) {
     console.error('GET /api/products failed with error:', error);

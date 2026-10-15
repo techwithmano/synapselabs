@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" width="1000" height="820" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="ring-bg" cx="50%" cy="48%" r="62%" fx="50%" fy="42%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EDF2F7"/>
+    </radialGradient>
+
+    <!-- Floating Soft Shadow -->
+    <radialGradient id="ring-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.2"/>
+      <stop offset="40%" stop-color="#334155" stop-opacity="0.1"/>
+      <stop offset="75%" stop-color="#64748B" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Filter for Shadow -->
+    <filter id="ring-depth-shadow" x="-30%" y="-30%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="28"/>
+      <feOffset dx="0" dy="44"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.15"/></feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Matte Zirconia Ceramic Shading -->
+    <linearGradient id="ceramic-matte" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="25%" stop-color="#F8FAFC"/>
+      <stop offset="65%" stop-color="#E2E8F0"/>
+      <stop offset="90%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- Outer Rim Highlight -->
+    <linearGradient id="ceramic-rim" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="40%" stop-color="#F1F5F9"/>
+      <stop offset="80%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- Titanium Inner Band -->
+    <linearGradient id="titanium-inner" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="30%" stop-color="#64748B"/>
+      <stop offset="60%" stop-color="#94A3B8"/>
+      <stop offset="85%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Cobalt Glow & Pulse Notch -->
+    <filter id="notch-glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="6" result="blur1"/>
+      <feGaussianBlur stdDeviation="16" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <linearGradient id="cobalt-notch-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="50%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+
+    <!-- Biometric Sensor Nodes -->
+    <linearGradient id="sensor-lens" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Clean Canvas -->
+  <rect width="1000" height="820" fill="url(#ring-bg)"/>
+
+  <!-- Subtle Blueprint Calibration Grid Lines -->
+  <g opacity="0.3" stroke="#CBD5E1" stroke-width="0.75" stroke-dasharray="2 6">
+    <line x1="120" y1="410" x2="880" y2="410"/>
+    <circle cx="500" cy="400" r="330" fill="none"/>
+  </g>
+
+  <!-- Ground Contact Shadow -->
+  <ellipse cx="500" cy="625" rx="270" ry="60" fill="url(#ring-shadow)"/>
+  <ellipse cx="500" cy="620" rx="160" ry="32" fill="url(#ring-shadow)" opacity="0.7"/>
+
+  <!-- Ring Component Group (Isometric 35° Floating Position) -->
+  <g filter="url(#ring-depth-shadow)" transform="translate(500, 390) rotate(-18)">
+
+    <!-- Main Outer Zirconia Ceramic Shell -->
+    <ellipse cx="0" cy="0" rx="275" ry="175" fill="url(#ceramic-matte)"/>
+
+    <!-- Outer Lower Thickness Extrusion -->
+    <path d="M -275,0 C -275,96 -152,175 0,175 C 152,175 275,96 275,0 L 275,38 C 275,134 152,213 0,213 C -152,213 -275,134 -275,38 Z"
+          fill="url(#ceramic-rim)"/>
+
+    <!-- Subtle Hairline Split Groove on Exterior -->
+    <path d="M -260,14 C -260,98 -144,178 0,178 C 144,178 260,98 260,14"
+          stroke="#CBD5E1" stroke-width="1.2" fill="none"/>
+
+    <!-- Glowing Cobalt Telemetry Notch (Precision Optical Sensor Slit) -->
+    <path d="M -35,198 C -12,204 12,204 35,198 L 35,206 C 12,212 -12,212 -35,206 Z"
+          fill="url(#cobalt-notch-gradient)" filter="url(#notch-glow)"/>
+
+    <!-- Titanium Inner Band Bevel & Core -->
+    <ellipse cx="0" cy="-4" rx="215" ry="132" fill="#1E293B"/>
+    <ellipse cx="0" cy="2" rx="200" ry="122" fill="url(#titanium-inner)"/>
+
+    <!-- Inner Shadow & Depth Layer -->
+    <path d="M -200,2 C -200,-65 -110,-120 0,-120 C 110,-120 200,-65 200,2 C 200,-35 110,-90 0,-90 C -110,-90 -200,-35 -200,2 Z"
+          fill="#0F172A" opacity="0.6"/>
+
+    <!-- Sapphire Sensor Array Nodes (Interior Rim) -->
+    <!-- Node Left -->
+    <ellipse cx="-100" cy="-48" rx="16" ry="10" fill="url(#sensor-lens)" transform="rotate(-18 -100 -48)"/>
+    <circle cx="-100" cy="-48" r="3.5" fill="#38BDF8" filter="url(#notch-glow)"/>
+
+    <!-- Node Center -->
+    <ellipse cx="0" cy="-72" rx="19" ry="11" fill="url(#sensor-lens)"/>
+    <circle cx="0" cy="-72" r="4.5" fill="#60A5FA" filter="url(#notch-glow)"/>
+    <circle cx="0" cy="-72" r="1.5" fill="#FFFFFF"/>
+
+    <!-- Node Right -->
+    <ellipse cx="100" cy="-48" rx="16" ry="10" fill="url(#sensor-lens)" transform="rotate(18 100 -48)"/>
+    <circle cx="100" cy="-48" r="3.5" fill="#38BDF8" filter="url(#notch-glow)"/>
+
+    <!-- Gloss Specular Highlight Across Upper Arch -->
+    <path d="M -275,0 C -275,-96 -152,-175 0,-175 C 152,-175 275,-96 275,0 C 255,-68 140,-132 0,-132 C -140,-132 -255,-68 -275,0 Z"
+          fill="#FFFFFF" opacity="0.95"/>
+
+    <path d="M -180,-100 C -110,-150 -30,-168 50,-166 C 100,-164 160,-142 200,-106 C 150,-130 90,-146 30,-146 C -40,-146 -110,-126 -180,-100 Z"
+          fill="#FFFFFF" opacity="0.7"/>
+
+    <!-- Technical Inner Laser Inscription -->
+    <text x="0" y="62" text-anchor="middle" font-family="Inter, monospace" font-size="8" font-weight="700" fill="#94A3B8" letter-spacing="3">
+      SYNAPSE // MODEL CORE-01 • SN-782
+    </text>
+  </g>
+
+  <!-- Technical Overlay HUD Badge -->
+  <g transform="translate(80, 720)">
+    <rect width="210" height="38" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+    <circle cx="20" cy="19" r="4" fill="#2563EB" filter="url(#notch-glow)"/>
+    <text x="34" y="23" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#0F172A" letter-spacing="0.5">
+      CORE RING <tspan fill="#64748B" font-weight="500">| WEARABLE 01</tspan>
+    </text>
+  </g>
+</svg>

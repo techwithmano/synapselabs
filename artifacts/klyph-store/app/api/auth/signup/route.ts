@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
     }
 
     await connectToDatabase();
-    await User.init();
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name: cleanName,

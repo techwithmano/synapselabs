@@ -218,7 +218,11 @@ export default function SynapseStorefront({
   }
 
   async function startCheckout() {
-    if (!account || !cartItems.length) return;
+    if (!account) {
+      window.location.assign('/login?next=%2Fcart');
+      return;
+    }
+    if (!cartItems.length) return;
     setStartingCheckout(true);
     setCheckoutError('');
     try {
@@ -239,7 +243,7 @@ export default function SynapseStorefront({
       };
       if (response.status === 401) {
         setAccount(null);
-        setCheckoutError(result.error ?? 'Your session expired. Sign in to continue.');
+        window.location.assign('/login?next=%2Fcart');
         return;
       }
       if (!response.ok) {
@@ -250,15 +254,7 @@ export default function SynapseStorefront({
         setCheckoutError('Stripe did not return a checkout link. Please try again.');
         return;
       }
-      const checkoutUrl = new URL(result.url);
-      if (
-        checkoutUrl.protocol !== 'https:' ||
-        checkoutUrl.hostname !== 'checkout.stripe.com'
-      ) {
-        setCheckoutError('The secure checkout link could not be verified.');
-        return;
-      }
-      window.location.assign(checkoutUrl.toString());
+      window.location.assign(result.url);
     } catch {
       setCheckoutError('Connection issue. Please try checkout again.');
     } finally {
@@ -379,7 +375,7 @@ export default function SynapseStorefront({
                   alt={featuredProduct.name}
                   className="hero-product-image"
                   fetchPriority="high"
-                  src={featuredProduct.image}
+                  src="/images/synapse/hero-synapse.svg"
                 />
               </div>
               <div className="hero-visual-caption">
@@ -443,7 +439,7 @@ export default function SynapseStorefront({
           <div className="product-grid">
             {products.map((product) => (
               <article className="product-card" key={product.id}>
-                <div className="product-card-image">
+                <div className="product-card-image product-image-well">
                   <img alt={product.name} loading="lazy" src={product.image} />
                   <span className="product-number">{String(products.indexOf(product) + 1).padStart(2, '0')}</span>
                 </div>
@@ -611,22 +607,20 @@ export default function SynapseStorefront({
                       </strong>
                     </div>
                     <p>Shipping and taxes are calculated separately.</p>
-                    {account ? (
-                      <button
-                        className="button-primary place-order-button"
-                        data-testid="button-checkout"
-                        disabled={startingCheckout}
-                        onClick={() => void startCheckout()}
-                        type="button"
-                      >
-                        {startingCheckout ? 'Opening secure checkout…' : 'Secure checkout'}
-                        {!startingCheckout && <ArrowRight size={17} aria-hidden="true" />}
-                      </button>
-                    ) : (
-                      <Link className="button-primary place-order-button" href="/login?next=%2Fcart">
-                        Sign in to checkout <ArrowRight size={17} aria-hidden="true" />
-                      </Link>
-                    )}
+                    <button
+                      className="button-primary place-order-button"
+                      data-testid="button-checkout"
+                      disabled={startingCheckout}
+                      onClick={() => void startCheckout()}
+                      type="button"
+                    >
+                      {startingCheckout
+                        ? 'Opening secure checkout…'
+                        : account
+                        ? 'Secure checkout'
+                        : 'Sign in to checkout'}
+                      {!startingCheckout && <ArrowRight size={17} aria-hidden="true" />}
+                    </button>
                     <div className="cart-currency-switch">
                       <span>Display in</span>
                       <button

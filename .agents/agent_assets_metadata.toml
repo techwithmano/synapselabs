@@ -1,0 +1,72 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "iU_poVgbcDUpyb-UGU2fz"
+uri = "file://unicode_day5/01-live-home.png"
+type = "image"
+title = "Live storefront — Home (after auth fix)"
+description = "Current public Synapse Labs homepage after the production auth fix."
+logical_id = "4d18cf41-9b78-4836-8b7a-bc916743ff4b"
+content_hash = "sha256:d278e890c44e41371908d4dd8d0cc6a2fbf85bee2a2611f23c0363636cafd444"
+size = 223585
+mtime_ms = 1792086358856
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:c89acfbe-15e1-4381-8780-304f71d8650d/4d18cf41-9b78-4836-8b7a-bc916743ff4b/18096164-4395-4135-8fd5-e9bdc3622cba"
+storage_version_token = "1792086409707398"
+content_type = "image/png"
+
+[[outputs]]
+id = "KgVznZO-wGrcUcx8u7wp1"
+uri = "file://unicode_day5/02-live-login.png"
+type = "image"
+title = "Live storefront — Sign in"
+description = "Screenshot of the public sign-in page on Vercel."
+logical_id = "54d97b58-f218-4f8d-a34c-cec723ef8600"
+content_hash = "sha256:d57f7234cecc4c0a08b868d7a0f00dfb8e058cb90cc7832971db4748287048ba"
+size = 67839
+mtime_ms = 1792084191059
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:c89acfbe-15e1-4381-8780-304f71d8650d/54d97b58-f218-4f8d-a34c-cec723ef8600/7eebf18c-cf74-459b-a312-e8c02f8d6700"
+storage_version_token = "1792085479077074"
+content_type = "image/png"
+
+[[outputs]]
+id = "aYIbJciU7uywPATiN8EDr"
+uri = "file://unicode_day5/03-live-signup.png"
+type = "image"
+title = "Live storefront — Sign up"
+description = "Screenshot of the public account creation page on Vercel."
+logical_id = "07be2775-f809-4330-abea-af505ad50f66"
+content_hash = "sha256:27a932bfbe52e8153026594f34448610be8c234df8c64515a172dc7ba3e73d7c"
+size = 69430
+mtime_ms = 1792084198495
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:c89acfbe-15e1-4381-8780-304f71d8650d/07be2775-f809-4330-abea-af505ad50f66/024c70a6-2991-4cbd-b6d0-bd32820a362f"
+storage_version_token = "1792085480316735"
+content_type = "image/png"
+
+[[outputs]]
+id = "GcehfHGgzjGGPLLACFlMd"
+uri = "file://unicode_day5/04-live-cart.png"
+type = "image"
+title = "Live storefront — Cart return route"
+description = "Screenshot of the public cart route used when returning from Stripe Checkout."
+logical_id = "494a7f63-c486-4844-b771-cfd1ad8da9b7"
+content_hash = "sha256:2dec1bf8a9542d949aaeb0deb43a6d9512389c2facd2775837f38ebbb46cb589"
+size = 234485
+mtime_ms = 1792084207495
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:c89acfbe-15e1-4381-8780-304f71d8650d/494a7f63-c486-4844-b771-cfd1ad8da9b7/c807a850-b755-4132-8539-0299bd5c44db"
+storage_version_token = "1792085481563363"
+content_type = "image/png"
+
+[[outputs]]
+id = "ehdS7HT-Gd7FxL6z3pqwr"
+uri = "file://unicode_day5/05-github-commits.png"
+type = "image"
+title = "GitHub — Commit history (after fix)"
+description = "Current main branch history showing the committed authentication fix."
+logical_id = "b8fd336b-4a0e-48be-bacf-0fe805a8ecfd"
+content_hash = "sha256:7aa6684284d4ef20de46ddf031359272b27b19b03cddd14df78f2691d18e2566"
+size = 130672
+mtime_ms = 1792086387164
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:c89acfbe-15e1-4381-8780-304f71d8650d/b8fd336b-4a0e-48be-bacf-0fe805a8ecfd/70f7df1f-27a5-4f5c-bc65-fd4b94e29a72"
+storage_version_token = "1792086410976321"
+content_type = "image/png"

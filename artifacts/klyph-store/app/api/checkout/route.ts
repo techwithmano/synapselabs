@@ -20,6 +20,58 @@ function getAuthenticatedUserId(request: NextRequest): string | null {
   return getUserIdFromToken(request.cookies.get(AUTH_COOKIE_NAME)?.value);
 }
 
+function sanitizeDiagnosticValue(value: string): string {
+  return value
+    .replace(/mongodb(?:\+srv)?:\/\/[^\s"'<>]+/gi, '[redacted MongoDB URI]')
+    .replace(/\bsk_(?:test|live)_[A-Za-z0-9]+\b/g, '[redacted Stripe key]')
+    .replace(
+      /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+      '[redacted token]',
+    )
+    .replace(
+      /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
+      '[redacted email]',
+    )
+    .replace(/[\r\n\t]+/g, ' ')
+    .slice(0, 240);
+}
+
+function describeCheckoutError(error: unknown): string {
+  if (!(error instanceof Error)) return 'name=UnknownError';
+
+  const details: string[] = [
+    `name=${sanitizeDiagnosticValue(error.name || 'Error')}`,
+  ];
+  const errorDetails = error as Error & {
+    code?: unknown;
+    type?: unknown;
+    statusCode?: unknown;
+    requestId?: unknown;
+  };
+
+  for (const key of ['type', 'code', 'statusCode', 'requestId'] as const) {
+    const value = errorDetails[key];
+    if (typeof value === 'string' || typeof value === 'number') {
+      details.push(`${key}=${sanitizeDiagnosticValue(String(value))}`);
+    }
+  }
+
+  if (error.message) {
+    details.push(`message="${sanitizeDiagnosticValue(error.message)}"`);
+  }
+  return details.join(' ');
+}
+
+async function removePendingOrder(orderId: Types.ObjectId, userId: string) {
+  try {
+    await Order.deleteOne({ _id: orderId, user: userId, status: 'pending' });
+  } catch (error) {
+    console.error(
+      `POST /api/checkout could not remove a pending order (${describeCheckoutError(error)}).`,
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const userId = getAuthenticatedUserId(request);
@@ -129,41 +181,48 @@ export async function POST(request: NextRequest) {
       status: 'pending',
     });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: orderItems.map((item) => {
-        const product = productById.get(String(item.product))!;
-        return {
-          price_data: {
-            currency,
-            unit_amount: toStripeMinorUnits(item.price, currency),
-            product_data: {
-              name: product.name,
-              description: product.description || undefined,
+    let sessionUrl: string | null = null;
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: orderItems.map((item) => {
+          const product = productById.get(String(item.product))!;
+          return {
+            price_data: {
+              currency,
+              unit_amount: toStripeMinorUnits(item.price, currency),
+              product_data: {
+                name: product.name,
+                description: product.description || undefined,
+              },
             },
-          },
-          quantity: item.quantity,
-        };
-      }),
-      metadata: { userId, orderId: String(order._id) },
-      success_url: `${request.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.nextUrl.origin}/cart`,
-    });
+            quantity: item.quantity,
+          };
+        }),
+        metadata: { userId, orderId: String(order._id) },
+        success_url: `${request.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${request.nextUrl.origin}/cart`,
+      });
+      sessionUrl = session.url;
+    } catch (error) {
+      await removePendingOrder(order._id, userId);
+      throw error;
+    }
 
-    if (!session.url) {
+    if (!sessionUrl) {
+      await removePendingOrder(order._id, userId);
       return NextResponse.json(
         { error: 'Stripe did not return a checkout link. Please try again.' },
         { status: 502 },
       );
     }
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: sessionUrl });
   } catch (error) {
     if (error instanceof StripeConfigurationError) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
-    const errorName = error instanceof Error ? error.name : 'UnknownError';
-    console.error(`POST /api/checkout failed (${errorName}).`);
+    console.error(`POST /api/checkout failed (${describeCheckoutError(error)}).`);
     return NextResponse.json(
       { error: 'Unable to start checkout. Please try again.' },
       { status: 500 },

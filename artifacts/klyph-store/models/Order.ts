@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import './Product';
 
 const orderItemSchema = new Schema(
   {

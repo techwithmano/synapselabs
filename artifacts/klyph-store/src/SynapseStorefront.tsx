@@ -15,21 +15,27 @@ import {
   type CheckoutCurrency,
 } from '@/lib/pricing';
 import {
+  Activity,
   ArrowRight,
   AudioLines,
   BatteryCharging,
   Check,
   ChevronRight,
+  Cpu,
   Fingerprint,
+  Layers,
   LogOut,
   Menu,
   Minus,
   PackageCheck,
   Plus,
+  ShieldCheck,
   ShoppingBag,
+  Sparkles,
   UserRound,
   Watch,
   X,
+  Zap,
 } from 'lucide-react';
 
 type Currency = 'KWD' | 'USD';
@@ -74,6 +80,70 @@ function categoryIcon(category: string) {
   return <Watch size={19} aria-hidden="true" />;
 }
 
+type ProductSpecs = {
+  materials: string;
+  telemetry: string;
+  battery: string;
+  durability: string;
+  weight: string;
+  features: string[];
+};
+
+const PRODUCT_SPECS: Record<string, ProductSpecs> = {
+  'synapse-core-ring': {
+    materials: 'Sintered Zirconia Ceramic & Grade 5 Titanium Chassis',
+    telemetry: 'Multi-spectral PPG (530nm/660nm) & Sub-epidermal Thermal Sensor',
+    battery: '7 Days Continuous Telemetry / Sub-second Inductive Charge',
+    durability: '10 ATM (100m) Water Resistance / Hypoallergenic PVD',
+    weight: '3.8g ultra-lightweight monolithic profile',
+    features: [
+      'Continuous neural biometric synchronicity & HRV telemetry',
+      'Circadian sleep architecture and body recovery mapping',
+      'Hairline cobalt optical telemetry pulse slit with ambient feedback',
+      'Seamless biometric telemetry integration with zero screen distraction',
+    ],
+  },
+  'aura-spatial-clip': {
+    materials: 'Brushed Aerospace Titanium & Acoustic Micro-Grille',
+    telemetry: 'Bone-Conduction Dual-Acoustic Resonator Field',
+    battery: '14 Hours Continuous Playback / 36 Hours with Charging Vault',
+    durability: 'IP68 Dust & Water Immersion Resistance',
+    weight: '6.2g ergonomic auricle clip',
+    features: [
+      'Spatial acoustic conduction without ear canal occlusion',
+      'Dual beamforming MEMS noise-isolation microphone array',
+      'Whisper-grade ambient neural voice capture',
+      'Zero acoustic leakage at high sound pressure levels',
+    ],
+  },
+  'neurodock-magnetic-slate': {
+    materials: 'Chamfered Ceramic Top Surface with Obsidian Aluminum Chassis',
+    telemetry: '15W Adaptive Magnetic Resonance Inductive Charging',
+    battery: 'Direct AC/USB-C Power Delivery with GaN Efficiency',
+    durability: 'Scratch-resistant sintered ceramic surface',
+    weight: '145g weighted anti-slip monolithic base',
+    features: [
+      'Simultaneous multi-device inductive coupling',
+      '360° recessed cobalt status halo with breathing state indicator',
+      'Internal liquid-chamber thermal dissipation architecture',
+      'Foreign object detection and auto-power regulation',
+    ],
+  },
+};
+
+const defaultSpecs: ProductSpecs = {
+  materials: 'Aerospace-Grade Titanium & High-Purity Ceramic',
+  telemetry: 'Neural Biometric Sensor Array',
+  battery: 'Multi-day Active Telemetry / Fast Magnetic Induction',
+  durability: 'Water & Dust Resistant Architecture',
+  weight: 'Monolithic Ultra-Lightweight Construction',
+  features: [
+    'Seamless sensory telemetry integration',
+    'Tactile monolithic industrial finish',
+    'Sub-millimeter biometric clarity',
+  ],
+};
+
 export default function SynapseStorefront({
   initialCartOpen = false,
 }: {
@@ -93,6 +163,9 @@ export default function SynapseStorefront({
   const [checkoutError, setCheckoutError] = useState('');
   const [addedProduct, setAddedProduct] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [activeTelemetryTab, setActiveTelemetryTab] = useState<'biometrics' | 'audio' | 'power'>('biometrics');
+  const [toastMessage, setToastMessage] = useState<{ title: string; subtitle: string } | null>(null);
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
@@ -173,6 +246,18 @@ export default function SynapseStorefront({
     if (initialCartOpen && cartRestored) setCartOpen(true);
   }, [initialCartOpen, cartRestored]);
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        if (selectedProduct) setSelectedProduct(null);
+        if (cartOpen) setCartOpen(false);
+        if (mobileMenuOpen) setMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedProduct, cartOpen, mobileMenuOpen]);
+
   const productById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
     [products],
@@ -196,6 +281,7 @@ export default function SynapseStorefront({
     products[0];
 
   function addToCart(productId: string) {
+    const product = productById.get(productId);
     setCart((current) => {
       const found = current.find((line) => line.productId === productId);
       if (found) {
@@ -210,6 +296,13 @@ export default function SynapseStorefront({
     setAddedProduct(productId);
     setCheckoutError('');
     setCartOpen(true);
+    if (product) {
+      setToastMessage({
+        title: `Added ${product.name}`,
+        subtitle: `${formatPrice(product.price, currency)} • Added to bag`,
+      });
+      window.setTimeout(() => setToastMessage(null), 3200);
+    }
     window.setTimeout(() => setAddedProduct(''), 1400);
   }
 
@@ -588,7 +681,19 @@ export default function SynapseStorefront({
           <div className="product-grid">
             {products.map((product) => (
               <article className="product-card" key={product.id}>
-                <div className="product-card__visual">
+                <div
+                  className="product-card__visual"
+                  onClick={() => setSelectedProduct(product)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedProduct(product);
+                    }
+                  }}
+                  aria-label={`View detailed specifications for ${product.name}`}
+                >
                   <div className="product-card__badges">
                     <span className="product-card__category">{product.category}</span>
                     <span className="product-card__status">
@@ -599,7 +704,7 @@ export default function SynapseStorefront({
                     <img alt={product.name} loading="lazy" src={product.image} />
                   </div>
                   <div className="product-card__action">
-                    <span>View product ↗</span>
+                    <span>View product specs ↗</span>
                   </div>
                 </div>
                 <div className="product-card-content">
@@ -662,6 +767,180 @@ export default function SynapseStorefront({
               <h3>Recharge</h3>
               <p>Simple magnetic charging, ready when you are.</p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="telemetry-lab-section page-container" id="telemetry">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">THE SYNAPSE LAB // SYSTEM ARCHITECTURE</span>
+            <h2>Real-time Telemetry Demonstration.</h2>
+          </div>
+          <p>
+            Interactive sensor visualization showcasing live frequency waveforms, neural telemetry, and resonant inductive power.
+          </p>
+        </div>
+
+        <div className="telemetry-console">
+          <div className="telemetry-console__tabs" role="tablist" aria-label="Telemetry demonstration channels">
+            <button
+              className={`telemetry-tab${activeTelemetryTab === 'biometrics' ? ' is-active' : ''}`}
+              onClick={() => setActiveTelemetryTab('biometrics')}
+              type="button"
+              role="tab"
+              aria-selected={activeTelemetryTab === 'biometrics'}
+            >
+              <Fingerprint size={16} aria-hidden="true" />
+              <span>01 / Optical PPG Waveform</span>
+            </button>
+            <button
+              className={`telemetry-tab${activeTelemetryTab === 'audio' ? ' is-active' : ''}`}
+              onClick={() => setActiveTelemetryTab('audio')}
+              type="button"
+              role="tab"
+              aria-selected={activeTelemetryTab === 'audio'}
+            >
+              <AudioLines size={16} aria-hidden="true" />
+              <span>02 / Spatial Acoustic Conduction</span>
+            </button>
+            <button
+              className={`telemetry-tab${activeTelemetryTab === 'power' ? ' is-active' : ''}`}
+              onClick={() => setActiveTelemetryTab('power')}
+              type="button"
+              role="tab"
+              aria-selected={activeTelemetryTab === 'power'}
+            >
+              <BatteryCharging size={16} aria-hidden="true" />
+              <span>03 / Inductive Flux Resonance</span>
+            </button>
+          </div>
+
+          <div className="telemetry-display">
+            <div className="telemetry-display__header">
+              <div className="telemetry-status-badge">
+                <span className="telemetry-pulse-dot" />
+                <span>STREAM: LIVE TELEMETRY SIMULATION</span>
+              </div>
+              <span className="telemetry-timestamp">SAMPLING: 240Hz · HARDWARE LATENCY: &lt;1.8ms</span>
+            </div>
+
+            <div className="telemetry-screen">
+              {activeTelemetryTab === 'biometrics' && (
+                <div className="telemetry-stream">
+                  <div className="telemetry-readouts">
+                    <div className="readout-card">
+                      <span className="readout-label">PULSE CADENCE</span>
+                      <strong className="readout-value">68 <small>BPM</small></strong>
+                      <span className="readout-sub">RESTING CARDIOVASCULAR RATE</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">HEART RATE VARIABILITY</span>
+                      <strong className="readout-value">72 <small>ms</small></strong>
+                      <span className="readout-sub">NEURAL READINESS: OPTIMAL</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">BLOOD OXYGENATION</span>
+                      <strong className="readout-value">99.2 <small>%</small></strong>
+                      <span className="readout-sub">MULTI-SPECTRAL OPTICAL</span>
+                    </div>
+                  </div>
+                  <div className="telemetry-waveform-wrap">
+                    <svg className="telemetry-svg" viewBox="0 0 800 160" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
+                          <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        className="telemetry-wave-fill"
+                        d="M0,100 Q40,100 60,95 T100,90 T140,85 T160,30 T170,140 T180,85 T220,95 T260,100 T300,100 Q340,100 360,95 T400,90 T440,85 T460,30 T470,140 T480,85 T520,95 T560,100 T600,100 Q640,100 660,95 T700,90 T740,85 T760,30 T770,140 T780,85 T800,100 L800,160 L0,160 Z"
+                        fill="url(#waveGrad)"
+                      />
+                      <path
+                        className="telemetry-wave-line"
+                        d="M0,100 Q40,100 60,95 T100,90 T140,85 T160,30 T170,140 T180,85 T220,95 T260,100 T300,100 Q340,100 360,95 T400,90 T440,85 T460,30 T470,140 T480,85 T520,95 T560,100 T600,100 Q640,100 660,95 T700,90 T740,85 T760,30 T770,140 T780,85 T800,100"
+                        fill="none"
+                        stroke="#2563EB"
+                        strokeWidth="2.5"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
+
+              {activeTelemetryTab === 'audio' && (
+                <div className="telemetry-stream">
+                  <div className="telemetry-readouts">
+                    <div className="readout-card">
+                      <span className="readout-label">FREQUENCY SPECTRUM</span>
+                      <strong className="readout-value">20Hz–40kHz</strong>
+                      <span className="readout-sub">HI-RES SPATIAL RESOLUTION</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">CONDUCTION SPEED</span>
+                      <strong className="readout-value">1.2 <small>ms</small></strong>
+                      <span className="readout-sub">ULTRA-LOW LATENCY AUDIO</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">BEAMFORMING ISOLATION</span>
+                      <strong className="readout-value">-38 <small>dB</small></strong>
+                      <span className="readout-sub">ACOUSTIC LEAKAGE: ZERO</span>
+                    </div>
+                  </div>
+                  <div className="telemetry-bars-wrap">
+                    {[35, 62, 48, 88, 70, 95, 54, 80, 42, 68, 92, 75, 40, 85, 60, 90, 50, 78, 65, 82, 45, 72, 88, 60].map((height, i) => (
+                      <div className="eq-bar" key={i} style={{ height: `${height}%`, animationDelay: `${i * 0.05}s` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTelemetryTab === 'power' && (
+                <div className="telemetry-stream">
+                  <div className="telemetry-readouts">
+                    <div className="readout-card">
+                      <span className="readout-label">INDUCTIVE POWER</span>
+                      <strong className="readout-value">15.0 <small>W</small></strong>
+                      <span className="readout-sub">MAGNETIC RESONANCE COUPLING</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">SURFACE THERMAL STATE</span>
+                      <strong className="readout-value">31.4 <small>°C</small></strong>
+                      <span className="readout-sub">PASSIVE LIQUID-CHAMBER COOLING</span>
+                    </div>
+                    <div className="readout-card">
+                      <span className="readout-label">CONVERSION EFFICIENCY</span>
+                      <strong className="readout-value">94.8 <small>%</small></strong>
+                      <span className="readout-sub">GaN FAST RESONANT INVERTER</span>
+                    </div>
+                  </div>
+                  <div className="telemetry-waveform-wrap">
+                    <svg className="telemetry-svg" viewBox="0 0 800 160" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="powerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        className="telemetry-wave-fill"
+                        d="M0,80 Q50,20 100,80 T200,80 T300,80 T400,80 T500,80 T600,80 T700,80 T800,80 L800,160 L0,160 Z"
+                        fill="url(#powerGrad)"
+                      />
+                      <path
+                        className="telemetry-wave-line"
+                        d="M0,80 Q50,20 100,80 T200,80 T300,80 T400,80 T500,80 T600,80 T700,80 T800,80"
+                        fill="none"
+                        stroke="#10B981"
+                        strokeWidth="2.5"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -815,6 +1094,139 @@ export default function SynapseStorefront({
             </div>
           </section>
         </div>
+      )}
+      {selectedProduct && (
+        <div
+          className="modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedProduct(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-product-title"
+        >
+          <div className="spec-modal">
+            <button
+              className="icon-button modal-close-btn"
+              onClick={() => setSelectedProduct(null)}
+              aria-label="Close product specifications"
+              type="button"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+
+            <div className="spec-modal__layout">
+              <div className="spec-modal__visual">
+                <span className="spec-modal__category">{selectedProduct.category}</span>
+                <img
+                  src={selectedProduct.image}
+                  alt={selectedProduct.name}
+                  className="spec-modal__img"
+                />
+                <div className="spec-modal__meta-strip">
+                  <span>FLAGSHIP INSTRUMENT</span>
+                  <strong>FORM 001 // SYNAPSE LABS</strong>
+                </div>
+              </div>
+
+              <div className="spec-modal__details">
+                <span className="eyebrow">HARDWARE SPECIFICATIONS</span>
+                <h2 id="modal-product-title">{selectedProduct.name}</h2>
+                <p className="spec-modal__description">{selectedProduct.description}</p>
+
+                <div className="spec-grid">
+                  {(() => {
+                    const specs = PRODUCT_SPECS[selectedProduct.slug] ?? defaultSpecs;
+                    return (
+                      <>
+                        <div className="spec-item">
+                          <span className="spec-label">
+                            <Layers size={13} aria-hidden="true" /> Materials
+                          </span>
+                          <span className="spec-val">{specs.materials}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="spec-label">
+                            <Cpu size={13} aria-hidden="true" /> Telemetry Architecture
+                          </span>
+                          <span className="spec-val">{specs.telemetry}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="spec-label">
+                            <Zap size={13} aria-hidden="true" /> Power &amp; Autonomy
+                          </span>
+                          <span className="spec-val">{specs.battery}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="spec-label">
+                            <ShieldCheck size={13} aria-hidden="true" /> Environmental Durability
+                          </span>
+                          <span className="spec-val">{specs.durability}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <div className="spec-features">
+                  <span className="spec-features-title">Core Engineering Capabilities</span>
+                  <ul>
+                    {((PRODUCT_SPECS[selectedProduct.slug] ?? defaultSpecs).features).map((feat, i) => (
+                      <li key={i}>
+                        <Check size={14} className="feature-check" aria-hidden="true" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="spec-modal__footer">
+                  <div className="price-stack">
+                    <span className="price-label">HARDWARE INVESTMENT</span>
+                    <strong className="spec-modal__price">
+                      {formatPrice(selectedProduct.price, currency)}
+                    </strong>
+                  </div>
+                  <button
+                    className={`button-primary spec-add-btn${addedProduct === selectedProduct.id ? ' is-added' : ''}`}
+                    onClick={() => {
+                      addToCart(selectedProduct.id);
+                    }}
+                    type="button"
+                  >
+                    {addedProduct === selectedProduct.id ? (
+                      <>Added to Bag <Check size={16} aria-hidden="true" /></>
+                    ) : (
+                      <>Add to Bag <ArrowRight size={16} aria-hidden="true" /></>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toastMessage && (
+        <aside className="synapse-toast" role="status" aria-live="polite">
+          <div className="toast-content">
+            <span className="toast-dot" aria-hidden="true" />
+            <div>
+              <strong>{toastMessage.title}</strong>
+              <small>{toastMessage.subtitle}</small>
+            </div>
+          </div>
+          <button
+            className="toast-action"
+            onClick={() => {
+              setCartOpen(true);
+              setToastMessage(null);
+            }}
+            type="button"
+          >
+            View bag ↗
+          </button>
+        </aside>
       )}
     </main>
   );

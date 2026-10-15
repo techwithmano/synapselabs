@@ -11,7 +11,7 @@ const seedProducts = [
     description:
       'Matte ceramic biometric pulse and neural telemetry band with titanium interior.',
     price: 18,
-    image: '/images/synapse/synapse-core-ring.svg',
+    image: '/images/synapse/synapse-core-ring.webp',
     category: 'Wearables',
   },
   {
@@ -19,7 +19,7 @@ const seedProducts = [
     description:
       'Titanium bone-conduction spatial audio and voice interface with acoustic micro-grille.',
     price: 26,
-    image: '/images/synapse/aura-spatial-clip.svg',
+    image: '/images/synapse/aura-spatial-clip.webp',
     category: 'Audio',
   },
   {
@@ -27,7 +27,7 @@ const seedProducts = [
     description:
       'High-speed inductive ceramic charging plate with illuminated cobalt status halo.',
     price: 14,
-    image: '/images/synapse/neurodock-slate.svg',
+    image: '/images/synapse/neurodock-slate.webp',
     category: 'Power',
   },
 ];

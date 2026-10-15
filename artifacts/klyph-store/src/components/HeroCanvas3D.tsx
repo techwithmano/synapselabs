@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 export default function HeroCanvas3D() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -10,17 +11,16 @@ export default function HeroCanvas3D() {
     const container = containerRef.current;
     if (!container) return;
 
-    let width = container.clientWidth || 500;
-    let height = container.clientHeight || 400;
+    let width = container.clientWidth || 540;
+    let height = container.clientHeight || 420;
 
-    // 1. Scene Setup
+    // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
 
-    // Camera: FOV 45, positioned at [0, 0, 7]
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 7);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    camera.position.set(0, 0.35, 6.4);
 
-    // Renderer: Transparent background, antialiasing enabled, pixel ratio capped at Math.min(devicePixelRatio, 2)
+    // 2. High-Fidelity WebGL Renderer with ACES Tone Mapping
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
@@ -28,89 +28,256 @@ export default function HeroCanvas3D() {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 0); // Pure transparent
+    renderer.setClearColor(0x000000, 0); // Transparent
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.25;
 
     container.appendChild(renderer.domElement);
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';
 
-    // 2. Procedural Ring Architecture
-    const ringGroup = new THREE.Group();
+    // 3. Realistic Studio Lighting Environment (PMREMGenerator + RoomEnvironment)
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+    const roomEnv = new RoomEnvironment();
+    const envTexture = pmremGenerator.fromScene(roomEnv, 0.04).texture;
+    scene.environment = envTexture;
 
-    // Outer Shell: TorusGeometry(2.1, 0.42, 64, 128)
-    const outerGeometry = new THREE.TorusGeometry(2.1, 0.42, 64, 128);
-    const outerMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xF6F5F0,
-      roughness: 0.28,
-      metalness: 0.04,
-      clearcoat: 0.9,
-      clearcoatRoughness: 0.12,
-    });
-    const outerMesh = new THREE.Mesh(outerGeometry, outerMaterial);
-    ringGroup.add(outerMesh);
-
-    // Inner Sensor Core: CylinderGeometry(1.68, 1.68, 0.72, 64, 1, true)
-    const innerGeometry = new THREE.CylinderGeometry(1.68, 1.68, 0.72, 64, 1, true);
-    // Align cylinder axis with torus inner aperture (Z-axis)
-    innerGeometry.rotateX(Math.PI / 2);
-    const innerMaterial = new THREE.MeshStandardMaterial({
-      color: 0x94A3B8,
-      metalness: 0.88,
-      roughness: 0.32,
-      side: THREE.DoubleSide,
-    });
-    const innerMesh = new THREE.Mesh(innerGeometry, innerMaterial);
-    ringGroup.add(innerMesh);
-
-    // Hairline Cobalt Optical Slit: TorusGeometry(2.105, 0.035, 32, 128)
-    const slitGeometry = new THREE.TorusGeometry(2.105, 0.035, 32, 128);
-    const slitMaterial = new THREE.MeshBasicMaterial({
-      color: 0x2563EB,
-    });
-    const slitMesh = new THREE.Mesh(slitGeometry, slitMaterial);
-    ringGroup.add(slitMesh);
-
-    // Initial architectural tilt
-    ringGroup.rotation.x = 0.4;
-    ringGroup.rotation.z = 0.15;
-    scene.add(ringGroup);
-
-    // 3. Lighting Rig
-    // Soft ambient light: #FFFFFF, intensity 1.4
-    const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.4);
+    // 4. Studio Directional & Rim Lighting Rig
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    // Key directional light top-left: #FFFFFF, intensity 2.2 at [-4, 6, 5]
-    const keyLight = new THREE.DirectionalLight(0xFFFFFF, 2.2);
-    keyLight.position.set(-4, 6, 5);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    keyLight.position.set(-4.5, 6.0, 5.0);
     scene.add(keyLight);
 
-    // Subtle cobalt rim light back-right: #2563EB, intensity 1.8 at [5, -2, -4]
-    const rimLight = new THREE.DirectionalLight(0x2563EB, 1.8);
-    rimLight.position.set(5, -2, -4);
-    scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 1.6);
+    fillLight.position.set(4.5, 3.2, 4.0);
+    scene.add(fillLight);
 
-    // 4. Mouse Tracking & Parallax
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let currentRotationY = 0;
+    const cobaltRimLight = new THREE.DirectionalLight(0x2563eb, 3.2);
+    cobaltRimLight.position.set(5.0, -2.5, -4.0);
+    scene.add(cobaltRimLight);
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      if (!innerWidth || !innerHeight) return;
-      // Normalized coordinates (-1 to 1)
-      const nx = (event.clientX / innerWidth) * 2 - 1;
-      const ny = -(event.clientY / innerHeight) * 2 + 1;
-      targetMouseX = nx * 0.45;
-      targetMouseY = ny * 0.35;
+    const topSoftLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    topSoftLight.position.set(0, 8, 1);
+    scene.add(topSoftLight);
+
+    // 5. Procedural Soft Contact Shadow under Ring
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 256;
+    shadowCanvas.height = 256;
+    const shadowCtx = shadowCanvas.getContext('2d');
+    if (shadowCtx) {
+      const gradient = shadowCtx.createRadialGradient(128, 128, 20, 128, 128, 120);
+      gradient.addColorStop(0, 'rgba(15, 23, 42, 0.22)');
+      gradient.addColorStop(0.35, 'rgba(15, 23, 42, 0.12)');
+      gradient.addColorStop(0.7, 'rgba(15, 23, 42, 0.03)');
+      gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+      shadowCtx.fillStyle = gradient;
+      shadowCtx.fillRect(0, 0, 256, 256);
+    }
+    const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+    const shadowGeo = new THREE.PlaneGeometry(5.2, 5.2);
+    const shadowMat = new THREE.MeshBasicMaterial({
+      map: shadowTexture,
+      transparent: true,
+      opacity: 0.8,
+      depthWrite: false,
+    });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = -1.55;
+    scene.add(shadowMesh);
+
+    // 6. Master Ring Assembly (CAD Lathe Geometry Architecture)
+    const ringMasterGroup = new THREE.Group();
+
+    // Dimensions: outer radius 2.22, inner radius 1.96, height 0.92
+    const rOuter = 2.22;
+    const rInner = 1.96;
+    const halfH = 0.46;
+
+    // --- A. Outer Monolithic Zirconia Ceramic Shell ---
+    // Ergonomic cambered crown with distinct 45-degree chamfered shoulders
+    const ceramicPoints: THREE.Vector2[] = [
+      new THREE.Vector2(2.08, -halfH),
+      new THREE.Vector2(rOuter - 0.055, -halfH),
+      new THREE.Vector2(rOuter, -halfH + 0.06), // bottom chamfer
+      new THREE.Vector2(rOuter + 0.035, -0.22),
+      new THREE.Vector2(rOuter + 0.048, 0.0), // subtle convex crown apex
+      new THREE.Vector2(rOuter + 0.035, 0.22),
+      new THREE.Vector2(rOuter, halfH - 0.06), // top chamfer
+      new THREE.Vector2(rOuter - 0.055, halfH),
+      new THREE.Vector2(2.08, halfH),
+    ];
+
+    const ceramicGeo = new THREE.LatheGeometry(ceramicPoints, 128);
+    const ceramicMat = new THREE.MeshPhysicalMaterial({
+      color: 0xf7f7f5, // warm high-key porcelain ceramic
+      roughness: 0.16,
+      metalness: 0.04,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.06,
+      reflectivity: 0.92,
+      ior: 1.54,
+    });
+    const ceramicMesh = new THREE.Mesh(ceramicGeo, ceramicMat);
+    ringMasterGroup.add(ceramicMesh);
+
+    // --- B. Inner Grade 5 Brushed Titanium Core & Chamfered Rims ---
+    const titaniumPoints: THREE.Vector2[] = [
+      new THREE.Vector2(2.09, -halfH),
+      new THREE.Vector2(rInner + 0.04, -halfH),
+      new THREE.Vector2(rInner, -halfH + 0.045), // inner bevel
+      new THREE.Vector2(rInner - 0.015, 0.0),   // inner finger contour
+      new THREE.Vector2(rInner, halfH - 0.045),
+      new THREE.Vector2(rInner + 0.04, halfH),
+      new THREE.Vector2(2.09, halfH),
+    ];
+
+    const titaniumGeo = new THREE.LatheGeometry(titaniumPoints, 128);
+    const titaniumMat = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8, // satin aerospace titanium
+      metalness: 0.95,
+      roughness: 0.22,
+    });
+    const titaniumMesh = new THREE.Mesh(titaniumGeo, titaniumMat);
+    ringMasterGroup.add(titaniumMesh);
+
+    // --- C. Hairline Cobalt Optical Slit ---
+    // Equatorial groove pulsing around the outer ceramic crown
+    const slitPoints: THREE.Vector2[] = [
+      new THREE.Vector2(rOuter + 0.047, -0.016),
+      new THREE.Vector2(rOuter + 0.052, -0.016),
+      new THREE.Vector2(rOuter + 0.052, 0.016),
+      new THREE.Vector2(rOuter + 0.047, 0.016),
+    ];
+    const slitGeo = new THREE.LatheGeometry(slitPoints, 128);
+    const slitMat = new THREE.MeshStandardMaterial({
+      color: 0x2563eb,
+      emissive: 0x1d4ed8,
+      emissiveIntensity: 0.85,
+      roughness: 0.2,
+      metalness: 0.3,
+    });
+    const slitMesh = new THREE.Mesh(slitGeo, slitMat);
+    ringMasterGroup.add(slitMesh);
+
+    // --- D. Biometric PPG Optical Sensor Cluster (Inner Finger Telemetry) ---
+    // 3 medical-grade optical sensor nodes protruding gently into the inner rim
+    const sensorBaseGeo = new THREE.CylinderGeometry(0.08, 0.09, 0.04, 32);
+    sensorBaseGeo.rotateZ(Math.PI / 2);
+    const sensorBaseMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      metalness: 0.6,
+      roughness: 0.3,
+    });
+
+    const sensorDomeGeo = new THREE.SphereGeometry(0.065, 24, 16);
+    const sensorDomeMat = new THREE.MeshPhysicalMaterial({
+      color: 0x090d16,
+      roughness: 0.04,
+      metalness: 0.1,
+      transmission: 0.88,
+      ior: 1.55,
+      clearcoat: 1.0,
+    });
+
+    const ledCoreGeo = new THREE.SphereGeometry(0.024, 16, 12);
+    const greenLedMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+    const cobaltLedMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+
+    const sensorAngles = [-0.32, 0, 0.32]; // 3 distinct sensor nodes
+    sensorAngles.forEach((angle, idx) => {
+      const sensorNode = new THREE.Group();
+      sensorNode.rotation.y = angle;
+
+      // Base ring mount
+      const base = new THREE.Mesh(sensorBaseGeo, sensorBaseMat);
+      base.position.set(rInner + 0.01, 0, 0);
+      sensorNode.add(base);
+
+      // Optical resin dome
+      const dome = new THREE.Mesh(sensorDomeGeo, sensorDomeMat);
+      dome.position.set(rInner + 0.02, 0, 0);
+      dome.scale.set(0.65, 1.25, 1.25);
+      sensorNode.add(dome);
+
+      // Embedded LED emitter (central is green PPG, flanking are telemetry cobalt/IR)
+      const led = new THREE.Mesh(ledCoreGeo, idx === 1 ? greenLedMat : cobaltLedMat);
+      led.position.set(rInner + 0.025, 0, 0);
+      sensorNode.add(led);
+
+      ringMasterGroup.add(sensorNode);
+    });
+
+    // Initial 3/4 Isometric Perspective Angle
+    ringMasterGroup.rotation.x = 0.52;
+    ringMasterGroup.rotation.z = 0.22;
+    scene.add(ringMasterGroup);
+
+    // 7. Interactive Free Drag & Touch Controls (360-degree rotation)
+    let isDragging = false;
+    let prevPointerX = 0;
+    let prevPointerY = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let targetRotationX = 0.52;
+    let targetRotationY = 0.3;
+
+    // Mouse Move Parallax
+    let parallaxTargetX = 0;
+    let parallaxTargetY = 0;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      isDragging = true;
+      prevPointerX = event.clientX;
+      prevPointerY = event.clientY;
+      velocityX = 0;
+      velocityY = 0;
+      if (renderer.domElement) {
+        renderer.domElement.style.cursor = 'grabbing';
+      }
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    const handlePointerMove = (event: PointerEvent) => {
+      const { innerWidth, innerHeight } = window;
+      if (innerWidth && innerHeight) {
+        parallaxTargetX = ((event.clientX / innerWidth) * 2 - 1) * 0.25;
+        parallaxTargetY = (-((event.clientY / innerHeight) * 2 - 1)) * 0.2;
+      }
 
-    // Handle container / window resize
+      if (!isDragging) return;
+
+      const deltaX = event.clientX - prevPointerX;
+      const deltaY = event.clientY - prevPointerY;
+      prevPointerX = event.clientX;
+      prevPointerY = event.clientY;
+
+      velocityX = deltaX * 0.008;
+      velocityY = deltaY * 0.008;
+
+      targetRotationY += velocityX;
+      targetRotationX += velocityY;
+    };
+
+    const handlePointerUp = () => {
+      isDragging = false;
+      if (renderer.domElement) {
+        renderer.domElement.style.cursor = 'grab';
+      }
+    };
+
+    const dom = renderer.domElement;
+    dom.style.cursor = 'grab';
+    dom.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+
+    // 8. Responsive Container Resize Handler
     const handleResize = () => {
       if (!container) return;
       const newWidth = container.clientWidth;
@@ -126,45 +293,76 @@ export default function HeroCanvas3D() {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // 5. Animation Loop
+    // 9. Fluid Animation Loop (60/120 FPS)
     let animationFrameId: number;
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
 
-      // Smooth continuous idle rotation: group.rotation.y += 0.004
-      currentRotationY += 0.004;
+      // Gentle floating levitation bob (sinusoidal)
+      const bobOffset = Math.sin(elapsedTime * 1.5) * 0.08;
+      ringMasterGroup.position.y = bobOffset;
+      shadowMesh.scale.setScalar(1 - bobOffset * 0.35);
 
-      // Smooth lerp toward mouse target (factor 0.05)
-      const desiredX = 0.4 - targetMouseY;
-      const desiredY = currentRotationY + targetMouseX;
+      if (!isDragging) {
+        // Continuous slow idle auto-rotation
+        targetRotationY += 0.0035;
 
-      ringGroup.rotation.x += (desiredX - ringGroup.rotation.x) * 0.05;
-      ringGroup.rotation.y += (desiredY - ringGroup.rotation.y) * 0.05;
+        // Apply friction to momentum velocity
+        velocityX *= 0.94;
+        velocityY *= 0.94;
+        targetRotationY += velocityX;
+        targetRotationX += velocityY;
+      }
+
+      // Smooth damping toward target orientation + cursor parallax
+      const currentDestX = targetRotationX + parallaxTargetY;
+      const currentDestY = targetRotationY + parallaxTargetX;
+
+      ringMasterGroup.rotation.x += (currentDestX - ringMasterGroup.rotation.x) * 0.08;
+      ringMasterGroup.rotation.y += (currentDestY - ringMasterGroup.rotation.y) * 0.08;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
-    // 6. Clean Unmount
+    // 10. Clean Lifecycle Disposal
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('mousemove', handleMouseMove);
+      dom.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
 
-      // Dispose geometries
-      outerGeometry.dispose();
-      innerGeometry.dispose();
-      slitGeometry.dispose();
+      // Geometries
+      ceramicGeo.dispose();
+      titaniumGeo.dispose();
+      slitGeo.dispose();
+      sensorBaseGeo.dispose();
+      sensorDomeGeo.dispose();
+      ledCoreGeo.dispose();
+      shadowGeo.dispose();
 
-      // Dispose materials
-      outerMaterial.dispose();
-      innerMaterial.dispose();
-      slitMaterial.dispose();
+      // Materials & Textures
+      ceramicMat.dispose();
+      titaniumMat.dispose();
+      slitMat.dispose();
+      sensorBaseMat.dispose();
+      sensorDomeMat.dispose();
+      greenLedMat.dispose();
+      cobaltLedMat.dispose();
+      shadowMat.dispose();
+      shadowTexture.dispose();
 
-      // Dispose renderer
+      // Environment & Renderer
+      envTexture.dispose();
+      pmremGenerator.dispose();
+      roomEnv.dispose();
       renderer.dispose();
 
       if (container.contains(renderer.domElement)) {
@@ -184,9 +382,10 @@ export default function HeroCanvas3D() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'grab',
+        touchAction: 'none',
       }}
-      aria-label="Interactive 3D model of Synapse Core Ring"
+      aria-label="Interactive 3D model of Synapse Core Ring — drag to rotate in 360 degrees"
     />
   );
 }
+

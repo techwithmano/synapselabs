@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Fingerprint,
   LogOut,
+  Menu,
   Minus,
   PackageCheck,
   Plus,
@@ -91,6 +92,7 @@ export default function SynapseStorefront({
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
   const [addedProduct, setAddedProduct] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
@@ -289,8 +291,8 @@ export default function SynapseStorefront({
             </Link>
 
             <nav className="main-nav" aria-label="Main navigation">
-              <a className="nav-link" href="#devices">Devices</a>
-              <a className="nav-link" href="#technology">Technology</a>
+              <a className="nav-link" href="/#devices">Devices</a>
+              <a className="nav-link" href="/#technology">Technology</a>
             </nav>
 
           <div className="header-actions">
@@ -316,7 +318,12 @@ export default function SynapseStorefront({
             {!accountLoading &&
               (account ? (
                 <>
-                  <span className="nav-user-name" title={account.name}>{account.name}</span>
+                  <div className="nav-user-pill" title={account.name}>
+                    <span className="nav-user-avatar" aria-hidden="true">
+                      {account.name.trim().charAt(0) || 'U'}
+                    </span>
+                    <span className="nav-user-name">{account.name}</span>
+                  </div>
                   <Link
                     aria-label="My orders"
                     className="icon-button orders-nav-button"
@@ -354,8 +361,114 @@ export default function SynapseStorefront({
               <ShoppingBag size={18} aria-hidden="true" />
               <span className="cart-count" data-testid="text-cart-count">{cartCount}</span>
             </button>
+
+            <button
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="icon-button mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              type="button"
+            >
+              {mobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+            </button>
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="mobile-nav-tray" aria-label="Mobile navigation">
+            <nav className="mobile-nav-links">
+              <a
+                className="mobile-nav-link"
+                href="/#devices"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>Devices</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </a>
+              <a
+                className="mobile-nav-link"
+                href="/#technology"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>Technology</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </a>
+            </nav>
+
+            <div className="mobile-nav-divider" />
+
+            <div className="mobile-nav-currency">
+              <span className="mobile-nav-subhead">Display Currency</span>
+              <div className="currency-switch" aria-label="Mobile display currency">
+                <button
+                  aria-pressed={currency === 'KWD'}
+                  onClick={() => setCurrency('KWD')}
+                  type="button"
+                >
+                  KWD
+                </button>
+                <button
+                  aria-pressed={currency === 'USD'}
+                  onClick={() => setCurrency('USD')}
+                  type="button"
+                >
+                  USD
+                </button>
+              </div>
+            </div>
+
+            <div className="mobile-nav-divider" />
+
+            <div className="mobile-nav-account">
+              {!accountLoading && (
+                account ? (
+                  <div className="mobile-account-group">
+                    <div className="mobile-user-info">
+                      <span className="nav-user-avatar" aria-hidden="true">
+                        {account.name.trim().charAt(0) || 'U'}
+                      </span>
+                      <div className="mobile-user-details">
+                        <strong>{account.name}</strong>
+                        <small>{account.email}</small>
+                      </div>
+                    </div>
+                    <div className="mobile-account-actions">
+                      <Link
+                        className="mobile-action-button"
+                        href="/orders"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <PackageCheck size={16} aria-hidden="true" />
+                        <span>My orders</span>
+                      </Link>
+                      <button
+                        className="mobile-action-button mobile-logout-button"
+                        disabled={signingOut}
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          void signOut();
+                        }}
+                        type="button"
+                      >
+                        <LogOut size={16} aria-hidden="true" />
+                        <span>Log out</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    className="button-primary mobile-signin-button"
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <UserRound size={17} aria-hidden="true" />
+                    <span>Sign in to account</span>
+                  </Link>
+                )
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
 

@@ -241,20 +241,22 @@ async function runApiServerAndEndToEndTests() {
 
   if (!serverReady) {
     console.log(`  Starting Next.js server on port ${TEST_PORT}...`);
+    const nextBin = path.resolve(import.meta.dirname, '../node_modules/next/dist/bin/next');
     serverProcess = spawn(
-      'npx.cmd',
-      ['next', 'start', '--hostname', '127.0.0.1', '--port', String(TEST_PORT)],
+      process.execPath,
+      [nextBin, 'start', '--hostname', '127.0.0.1', '--port', String(TEST_PORT)],
       {
         cwd: path.resolve(import.meta.dirname, '..'),
         env: {
           ...process.env,
-          PATH: 'C:\\Program Files\\Git\\bin;C:\\Program Files\\Git\\usr\\bin;' + process.env.PATH,
           PORT: String(TEST_PORT),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true,
       },
     );
+
+    serverProcess.stdout?.on('data', (d) => console.log(`[Next.js stdout] ${d.toString().trim()}`));
+    serverProcess.stderr?.on('data', (d) => console.error(`[Next.js stderr] ${d.toString().trim()}`));
 
     for (let i = 0; i < 30; i++) {
       try {
@@ -264,6 +266,7 @@ async function runApiServerAndEndToEndTests() {
           break;
         }
       } catch {}
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
@@ -305,8 +308,11 @@ async function runApiServerAndEndToEndTests() {
         password: 'password123',
       }),
     });
-    assert(signupRes.status === 200 || signupRes.status === 201, 'POST /api/auth/signup created new user');
     const signupData = await signupRes.json();
+    if (signupRes.status !== 200 && signupRes.status !== 201) {
+      console.error(`  ⚠️ Signup failed: status=${signupRes.status}`, signupData);
+    }
+    assert(signupRes.status === 200 || signupRes.status === 201, 'POST /api/auth/signup created new user');
     assert(signupData?.user?.email === user1Email, 'Signup returns user profile without passwordHash');
     assert(!signupData?.user?.passwordHash, 'Signup response never exposes passwordHash');
 

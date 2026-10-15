@@ -64,8 +64,7 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
-    const errorName = error instanceof Error ? error.name : 'UnknownError';
-    console.error(`POST /api/auth/signup failed (${errorName}).`);
+    console.error('POST /api/auth/signup failed:', error);
     return NextResponse.json(
       { error: 'Unable to create your account. Please try again.' },
       { status: 500 },

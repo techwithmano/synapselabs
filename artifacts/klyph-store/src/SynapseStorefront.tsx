@@ -273,18 +273,19 @@ export default function SynapseStorefront({
   }
 
   return (
-    <main className="synapse-store" data-testid="storefront">
+    <main className="synapse-canvas synapse-store" data-testid="storefront">
       <header className="site-header">
-        <div className="site-header-inner">
-          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <span className="brand-mark" aria-hidden="true">S</span>
-            <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
-          </Link>
+        <div className="nav-shell">
+          <div className="site-header-inner">
+            <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
+              <span className="brand-mark" aria-hidden="true">S</span>
+              <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+            </Link>
 
-          <nav className="main-nav" aria-label="Main navigation">
-            <a href="#devices">Devices</a>
-            <a href="#technology">Technology</a>
-          </nav>
+            <nav className="main-nav" aria-label="Main navigation">
+              <a className="nav-link" href="#devices">Devices</a>
+              <a className="nav-link" href="#technology">Technology</a>
+            </nav>
 
           <div className="header-actions">
             <div className="currency-switch" aria-label="Display currency">
@@ -349,19 +350,47 @@ export default function SynapseStorefront({
             </button>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       <section className="hero-section page-container">
         <div className="hero-copy">
-          <span className="eyebrow"><span className="eyebrow-dot" /> PERSONAL TECH, IN SYNC</span>
-          <h1>Technology that<br /><span>feels natural.</span></h1>
-          <p>Three focused devices. One clearer connection to your day.</p>
-          <a className="button-primary hero-button" href="#devices">
-            Explore the devices <ArrowRight size={17} aria-hidden="true" />
-          </a>
-          <div className="hero-note">
-            <span className="hero-note-icon"><Check size={14} aria-hidden="true" /></span>
-            Designed for everyday use
+          <span className="eyebrow">
+            <span className="eyebrow-dot" />
+            SYNAPSE LABS / HARDWARE SYSTEM 01
+          </span>
+          <h1>
+            Intelligence, in form.
+            <span className="headline-muted">Continuous biometric clarity.</span>
+          </h1>
+          <p className="hero-description">
+            Precision neural telemetry housed in tactile monolithic ceramics.
+            Calm, unyielding performance engineered for seamless sensory integration.
+          </p>
+          <div className="hero-cta-group">
+            <a className="synapse-button hero-button" href="#devices">
+              Explore the collection ↗
+            </a>
+            <a className="synapse-link-secondary" href="#technology">
+              Discover the technology <ChevronRight size={15} aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="hero-metadata-strip">
+            <div className="metadata-item">
+              <span className="metadata-label">Collection</span>
+              <span className="metadata-value">01 / Wearables</span>
+            </div>
+            <div className="metadata-divider" aria-hidden="true" />
+            <div className="metadata-item">
+              <span className="metadata-label">Design Language</span>
+              <span className="metadata-value">Ceramic / Titanium</span>
+            </div>
+            <div className="metadata-divider" aria-hidden="true" />
+            <div className="metadata-item">
+              <span className="metadata-label">Telemetry</span>
+              <span className="metadata-value">Continuous Neural Optical</span>
+            </div>
           </div>
         </div>
 
@@ -369,19 +398,26 @@ export default function SynapseStorefront({
           {loadingProducts ? (
             <div aria-hidden="true" className="hero-image-skeleton" />
           ) : featuredProduct ? (
-            <div className="hero-product-visual" data-testid="hero-product">
-              <div className="hero-image-frame">
+            <div className="hero-stage hero-product-visual" data-testid="hero-product">
+              <div className="hero-stage__halo" aria-hidden="true" />
+              <span className="hero-stage__label hero-stage__label--top">
+                SC–01 // CORE SENSOR ARRAY
+              </span>
+              <span className="hero-stage__label hero-stage__label--bottom">
+                FORM / 001 // ENGINEERED IN DETAIL
+              </span>
+              <div className="hero-stage__viewport">
                 <img
                   alt={featuredProduct.name}
-                  className="hero-product-image"
+                  className="hero-stage__image hero-product-image"
                   fetchPriority="high"
                   src="/images/synapse/hero-synapse.svg"
                 />
               </div>
-              <div className="hero-visual-caption">
+              <div className="hero-stage__caption">
                 <div className="hero-caption-icon">{categoryIcon(featuredProduct.category)}</div>
                 <div className="hero-caption-name">
-                  <span>FEATURED DEVICE</span>
+                  <span>FLAGSHIP INSTRUMENT</span>
                   <strong>{featuredProduct.name}</strong>
                 </div>
                 <span className="hero-caption-price">{formatPrice(featuredProduct.price, currency)}</span>
@@ -392,27 +428,26 @@ export default function SynapseStorefront({
               <Fingerprint size={46} aria-hidden="true" />
             </div>
           )}
-          <span className="hero-visual-index" aria-hidden="true">01 / 03</span>
         </div>
       </section>
 
       <section className="benefit-strip" aria-label="Synapse device categories">
         <div className="benefit-strip-inner">
-          <div><Fingerprint size={17} aria-hidden="true" /><span>Biometric sensing</span></div>
+          <div><Fingerprint size={17} aria-hidden="true" /><span>Sub-millimeter Biometrics</span></div>
           <span className="benefit-divider" aria-hidden="true" />
-          <div><AudioLines size={17} aria-hidden="true" /><span>Spatial audio</span></div>
+          <div><AudioLines size={17} aria-hidden="true" /><span>Spatial Acoustic Conduction</span></div>
           <span className="benefit-divider" aria-hidden="true" />
-          <div><BatteryCharging size={17} aria-hidden="true" /><span>Magnetic power</span></div>
+          <div><BatteryCharging size={17} aria-hidden="true" /><span>Monolithic Magnetic Induction</span></div>
         </div>
       </section>
 
       <section className="devices-section page-container" id="devices">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">THE COLLECTION</span>
-            <h2>Made to work together.</h2>
+            <span className="eyebrow">THE HARDWARE PORTFOLIO</span>
+            <h2>Engineered Calm.</h2>
           </div>
-          <p>Thoughtful hardware for how you move, listen, and recharge.</p>
+          <p>Tactile ceramic and titanium instrumentation designed for seamless biometric synchronicity.</p>
         </div>
 
         {productError && (
@@ -439,9 +474,19 @@ export default function SynapseStorefront({
           <div className="product-grid">
             {products.map((product) => (
               <article className="product-card" key={product.id}>
-                <div className="product-card-image product-image-well">
-                  <img alt={product.name} loading="lazy" src={product.image} />
-                  <span className="product-number">{String(products.indexOf(product) + 1).padStart(2, '0')}</span>
+                <div className="product-card__visual">
+                  <div className="product-card__badges">
+                    <span className="product-card__category">{product.category}</span>
+                    <span className="product-card__status">
+                      <span className="status-indicator-dot" /> AVAILABLE
+                    </span>
+                  </div>
+                  <div className="product-card__img-container">
+                    <img alt={product.name} loading="lazy" src={product.image} />
+                  </div>
+                  <div className="product-card__action">
+                    <span>View product ↗</span>
+                  </div>
                 </div>
                 <div className="product-card-content">
                   <div className="product-card-meta">
@@ -451,9 +496,12 @@ export default function SynapseStorefront({
                   <h3>{product.name}</h3>
                   <p>{product.description}</p>
                   <div className="product-card-footer">
-                    <strong data-testid={`text-price-${product.slug}`}>
-                      {formatPrice(product.price, currency)}
-                    </strong>
+                    <div className="price-stack">
+                      <span className="price-label">UNIT PRICE</span>
+                      <strong data-testid={`text-price-${product.slug}`}>
+                        {formatPrice(product.price, currency)}
+                      </strong>
+                    </div>
                     <button
                       className={`add-button${addedProduct === product.id ? ' is-added' : ''}`}
                       data-testid={`button-add-${product.slug}`}
@@ -507,10 +555,10 @@ export default function SynapseStorefront({
       <section className="closing-section page-container">
         <div>
           <span className="eyebrow">SYNAPSE LABS</span>
-          <h2>Your day, in better sync.</h2>
+          <h2>Human telemetry. Zero friction.</h2>
         </div>
-        <a className="button-primary" href="#devices">
-          Explore the collection <ArrowRight size={17} aria-hidden="true" />
+        <a className="synapse-button" href="#devices">
+          Explore the collection ↗
         </a>
       </section>
 

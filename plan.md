@@ -77,3 +77,29 @@ Transform "SYNAPSE LABS" inside `artifacts/klyph-store` into a production-grade,
 - [x] 5.2 Run full Next.js production build (`pnpm run build`).
 - [x] 5.3 Run full 41-assertion integration test suite (`pnpm test:integration`).
 - [x] **CHECKPOINT 5**: 0 errors, 0 hydration warnings, 100% test pass rate (41/41 passing).
+
+---
+
+### [x] Phase 6: "Engineered Calm" Hardware Showroom Architecture
+- [x] 6.1 Material Design Tokens (`synapse.css`):
+  - `--synapse-porcelain` (`#F6F5F0`), `--synapse-white` (`#FFFFFF`), `--synapse-mist` (`#E9EDF2`), `--synapse-steel` (`#8993A4`), `--synapse-obsidian` (`#0F172A`), `--synapse-cobalt` (`#2563EB`), `--synapse-line` (`rgba(15, 23, 42, 0.08)`).
+  - Multi-tier contact shadow & smooth easing `cubic-bezier(0.22, 1, 0.36, 1)`.
+- [x] 6.2 Atmospheric Canvas Lighting (`.synapse-canvas`):
+  - Dual radial gradients (at `74% 24%` and `8% 90%`) with inline SVG micro-grain noise overlay (`mix-blend-mode: multiply`, `opacity: 0.12`).
+- [x] 6.3 Perspective Hero Stage (`.hero-stage`):
+  - 1200px perspective, `.hero-stage__halo`, 8s ambient float animation (`@keyframes synapse-float`) with reduced-motion fallback.
+  - Monospace telemetry HUD labels (`SC–01 // CORE SENSOR ARRAY` & `FORM / 001 // ENGINEERED IN DETAIL`).
+  - Flagship caption bar with category icon, instrument title, and dynamic price.
+- [x] 6.4 Tactile Product Cards (`.product-card`):
+  - Ceramic glass shell (`rgba(255, 255, 255, 0.72)` + blur), 4:3 `.product-card__visual` image well with subtle radial gradient.
+  - Monospace category badge & monospace status pill (`AVAILABLE` with cobalt dot).
+  - Independent hardware hover physics: card lifts `-5px`, product image inside elevates `-5px` and scales `1.045` with deepened contact shadow.
+  - Floating pill action badge bottom-right (`View product ↗`) that slides up on card hover.
+- [x] 6.5 Floating Pill Navigation (`.nav-shell`):
+  - Sticky floating pill bar with 22px blur, razor hairline border, and 1px cobalt underline indicator scaling on hover.
+- [x] 6.6 Deep Obsidian Button (`.synapse-button`):
+  - 3D hover lift (`translateY(-1px)`), crisp focus rings, and tactile depression on click (`scale(0.985)`).
+- [x] 6.7 Quality Verification:
+  - `pnpm run typecheck`: 0 errors.
+  - `pnpm run build`: 0 errors, 7/7 static routes compiled.
+  - `pnpm test:integration`: 41/41 assertions passed.

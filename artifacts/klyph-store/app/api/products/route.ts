@@ -120,8 +120,7 @@ export async function GET() {
       headers: { 'Cache-Control': 'no-store, max-age=0' },
     });
   } catch (error) {
-    const errorName = error instanceof Error ? error.name : 'UnknownError';
-    console.error(`GET /api/products failed (${errorName}).`);
+    console.error('GET /api/products failed with error:', error);
     return NextResponse.json(
       { error: 'Unable to load products. Please try again.' },
       { status: 500 },

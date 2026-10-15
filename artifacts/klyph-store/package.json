@@ -9,6 +9,7 @@
     "start": "next start --hostname 0.0.0.0 --port ${PORT:-25830}",
     "serve": "next start --hostname 0.0.0.0 --port ${PORT:-25830}",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:integration": "tsx tests/full-integration.ts",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

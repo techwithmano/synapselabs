@@ -204,9 +204,57 @@ export async function POST(request: NextRequest) {
         cancel_url: `${request.nextUrl.origin}/cart`,
       });
       sessionUrl = session.url;
-    } catch (error) {
-      await removePendingOrder(order._id, userId);
-      throw error;
+    } catch (error: any) {
+      if (
+        currency === 'kwd' &&
+        typeof error?.message === 'string' &&
+        error.message.toLowerCase().includes('invalid currency: kwd')
+      ) {
+        const usdCurrency: CheckoutCurrency = 'usd';
+        const usdOrderItems = productIds.map((productId) => {
+          const product = productById.get(productId)!;
+          const price = getUnitPriceInCurrency(product.price, usdCurrency);
+          return {
+            product: product._id,
+            quantity: quantities.get(productId)!,
+            price,
+          };
+        });
+        const usdTotal = usdOrderItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        );
+
+        order.currency = usdCurrency;
+        order.items = usdOrderItems;
+        order.total = usdTotal;
+        await order.save();
+
+        const fallbackSession = await stripe.checkout.sessions.create({
+          mode: 'payment',
+          line_items: usdOrderItems.map((item) => {
+            const product = productById.get(String(item.product))!;
+            return {
+              price_data: {
+                currency: usdCurrency,
+                unit_amount: toStripeMinorUnits(item.price, usdCurrency),
+                product_data: {
+                  name: product.name,
+                  description: product.description || undefined,
+                },
+              },
+              quantity: item.quantity,
+            };
+          }),
+          metadata: { userId, orderId: String(order._id) },
+          success_url: `${request.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${request.nextUrl.origin}/cart`,
+        });
+        sessionUrl = fallbackSession.url;
+      } else {
+        await removePendingOrder(order._id, userId);
+        throw error;
+      }
     }
 
     if (!sessionUrl) {

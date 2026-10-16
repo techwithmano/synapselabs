@@ -884,7 +884,7 @@ export default function SynapseStorefront({
                       <span className="action-label">Orders</span>
                     </Link>
                     <button
-                      aria-label="Log out of account"
+                      aria-label="Log out"
                       className="icon-button logout-button"
                       disabled={signingOut}
                       onClick={() => void signOut()}

@@ -826,45 +826,57 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.98) 0%, var(--synapse-mist) 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
   border-bottom: 1px solid var(--synapse-line);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 0;
+  cursor: pointer;
 }
 .product-card__badges {
   position: absolute;
   top: 14px;
-  left: 16px;
-  right: 16px;
+  left: 14px;
+  right: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 4;
+  pointer-events: none;
 }
 .product-card__category {
-  font-family: monospace, ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--font-mono, monospace), ui-monospace, SFMono-Regular, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: var(--synapse-steel);
+  color: #475569;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
   text-transform: uppercase;
 }
 .product-card__status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: monospace, ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--font-mono, monospace), ui-monospace, SFMono-Regular, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: #334155;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 3px 8px;
+  color: #1E293B;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--synapse-line);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
   text-transform: uppercase;
 }
 .status-indicator-dot {
@@ -872,7 +884,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   height: 5px;
   border-radius: 50%;
   background: var(--synapse-cobalt);
-  box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.6);
 }
 .product-card__img-container {
   width: 100%;
@@ -880,19 +892,23 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
 }
 .product-card__visual img {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  object-position: center;
   display: block;
-  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.06));
-  transition: transform 0.5s var(--synapse-ease), filter 0.5s var(--synapse-ease);
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 .product-card:hover .product-card__visual img {
-  transform: translateY(-5px) scale(1.045);
-  filter: drop-shadow(0 20px 28px rgba(15, 23, 42, 0.12));
+  transform: scale(1.06);
+  filter: contrast(1.02);
 }
 .product-card__action {
   position: absolute;
@@ -904,10 +920,13 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   padding: 6px 12px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.25s var(--synapse-ease), transform 0.25s var(--synapse-ease);
@@ -1705,7 +1724,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   flex-direction: column;
   justify-content: space-between;
   padding: 28px;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0%, var(--synapse-mist) 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
   border-right: 1px solid var(--synapse-line);
 }
 .spec-modal__category {

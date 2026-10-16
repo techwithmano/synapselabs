@@ -1,0 +1,74 @@
+/* ==========================================================================
+   SYNAPSE LABS — DESIGN SYSTEM TOKENS
+   Aesthetic: Quiet, Precise, Human (Grade 8 plain-language, shopper-first)
+   ========================================================================== */
+
+:root {
+  /* 1. Curated Palette (Strict: Porcelain, Obsidian, Steel, Cobalt, White) */
+  --synapse-bg: #F6F5F0;             /* Porcelain page background */
+  --synapse-card: #FFFFFF;           /* Pure white card backgrounds */
+  --synapse-obsidian: #0F172A;       /* Primary text and primary CTA fill */
+  --synapse-steel: #475569;          /* Secondary body text, neutral captions */
+  --synapse-muted: #64748B;          /* Subtle tertiary labels */
+  --synapse-border: #E2E8F0;         /* Fine card and divider lines */
+  --synapse-border-light: #ECEAE4;   /* Warm card border on porcelain */
+  --synapse-cobalt: #2563EB;         /* Links, focus rings, selected pills */
+  --synapse-cobalt-light: #EFF6FF;   /* Soft cobalt tint for highlights */
+  --synapse-success: #16A34A;        /* In-stock status / checkmark */
+  --synapse-success-bg: #F0FDF4;     /* Soft green pill background */
+  --synapse-error: #DC2626;          /* Form and toast error alerts */
+  --synapse-error-bg: #FEF2F2;        /* Soft red alert container */
+  --synapse-amber: #D97706;          /* Pending state indicator */
+  --synapse-amber-bg: #FFFBEB;       /* Pending state banner container */
+
+  /* 2. Typography */
+  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* 3. Spacing Grid (8px baseline) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Layout Containers */
+  --container-max: 1200px;
+  --section-pad-y: 96px;
+  --section-pad-y-mobile: 64px;
+  --card-pad: 24px;
+
+  /* 4. Radius Tokens */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  /* 5. Shadows */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+  --shadow-card-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-drawer: -12px 0 36px rgba(15, 23, 42, 0.14);
+  --shadow-modal: 0 20px 48px -8px rgba(15, 23, 42, 0.18);
+
+  /* 6. Motion (150-250ms ease-out) */
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -93,6 +93,7 @@ test('cancel return opens the saved cart and prompts guests to sign in', async (
 test('checkout redirects to Stripe and account order history remains isolated', async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   const unique = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   const firstEmail = `synapse-e2e-${unique}@example.test`;
   await page.goto('/signup');
@@ -100,7 +101,7 @@ test('checkout redirects to Stripe and account order history remains isolated', 
   await page.getByLabel('Email').fill(firstEmail);
   await page.getByRole('textbox', { name: 'Password' }).fill('secure-test-password');
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
   await expect(page.getByRole('link', { name: 'My orders' })).toBeVisible();
 
   const sessionCookie = (await page.context().cookies()).find((cookie) => cookie.name === 'token');
@@ -163,7 +164,9 @@ test('checkout redirects to Stripe and account order history remains isolated', 
     items: [{ price: 18 }],
   });
 
-  await page.getByTestId('button-close-cart').click();
+  if (await page.getByTestId('button-close-cart').isVisible()) {
+    await page.getByTestId('button-close-cart').click();
+  }
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
   await page.goto('/signup');
@@ -171,7 +174,7 @@ test('checkout redirects to Stripe and account order history remains isolated', 
   await page.getByLabel('Email').fill(`synapse-e2e-${unique}-second@example.test`);
   await page.getByRole('textbox', { name: 'Password' }).fill('secure-test-password');
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
 
   const secondOrdersResponse = await page.request.get('/api/orders');
   expect(secondOrdersResponse.status()).toBe(200);

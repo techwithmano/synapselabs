@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { CART_STORAGE_KEY } from '@/lib/cart';
@@ -14,6 +14,7 @@ import {
   getUnitPriceInCurrency,
   type CheckoutCurrency,
 } from '@/lib/pricing';
+import SynapseLogo from './components/SynapseLogo';
 import {
   Activity,
   ArrowRight,
@@ -23,20 +24,29 @@ import {
   ChevronRight,
   Cpu,
   Fingerprint,
+  Heart,
   Layers,
+  Lock,
   LogOut,
   Menu,
   Minus,
   PackageCheck,
   Plus,
+  RotateCcw,
+  Search,
   ShieldCheck,
   ShoppingBag,
+  SlidersHorizontal,
   Sparkles,
+  Truck,
+  Undo2,
   UserRound,
   Watch,
   X,
   Zap,
 } from 'lucide-react';
+
+const FAVORITES_STORAGE_KEY = 'synapse_favorites';
 
 type Currency = 'KWD' | 'USD';
 type Product = {
@@ -59,6 +69,27 @@ type ApiProduct = {
   category: string;
 };
 type ProductResponse = { error?: string } | ApiProduct[];
+
+type VariantOption = { name: string; options: string[]; default: string };
+const PRODUCT_VARIANTS: Record<string, VariantOption> = {
+  'synapse-core-ring': {
+    name: 'Size',
+    options: ['US 8', 'US 9', 'US 10', 'US 11'],
+    default: 'US 9',
+  },
+  'aura-spatial-clip': {
+    name: 'Finish',
+    options: ['Matte Porcelain', 'Obsidian Slate'],
+    default: 'Matte Porcelain',
+  },
+  'neurodock-magnetic-slate': {
+    name: 'Finish',
+    options: ['Porcelain White', 'Titanium Silver'],
+    default: 'Porcelain White',
+  },
+};
+
+type AddButtonState = 'idle' | 'adding' | 'added' | 'error';
 
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -146,8 +177,10 @@ const defaultSpecs: ProductSpecs = {
 
 export default function SynapseStorefront({
   initialCartOpen = false,
+  hasBrandAd = false,
 }: {
   initialCartOpen?: boolean;
+  hasBrandAd?: boolean;
 } = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -166,6 +199,37 @@ export default function SynapseStorefront({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeTelemetryTab, setActiveTelemetryTab] = useState<'biometrics' | 'audio' | 'power'>('biometrics');
   const [toastMessage, setToastMessage] = useState<{ title: string; subtitle: string } | null>(null);
+
+  const [productAddStates, setProductAddStates] = useState<Record<string, AddButtonState>>({});
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({
+    'synapse-core-ring': 'US 9',
+    'aura-spatial-clip': 'Matte Porcelain',
+    'neurodock-magnetic-slate': 'Porcelain White',
+  });
+  const [deletedCartBackup, setDeletedCartBackup] = useState<CartLine[] | null>(null);
+
+  // Live Nav Search state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSelectedIndex, setSearchSelectedIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+
+  // Favorites / Wishlist state
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
+  const favoritesDrawerRef = useRef<HTMLElement>(null);
+
+  // Category filter & sort state
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedSort, setSelectedSort] = useState<string>('featured');
+
+  const checkoutButtonRef = useRef<HTMLButtonElement>(null);
+  const cartTriggerRef = useRef<HTMLButtonElement>(null);
+  const specModalTriggerRef = useRef<HTMLElement | null>(null);
+  const cartDrawerRef = useRef<HTMLElement>(null);
+  const specModalRef = useRef<HTMLDivElement>(null);
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
@@ -243,20 +307,192 @@ export default function SynapseStorefront({
   }, [cart, cartRestored]);
 
   useEffect(() => {
-    if (initialCartOpen && cartRestored) setCartOpen(true);
+    try {
+      const savedFavs = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+      if (savedFavs) {
+        const parsed = JSON.parse(savedFavs) as unknown;
+        if (Array.isArray(parsed) && parsed.every((id) => typeof id === 'string')) {
+          setFavorites(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    } catch {}
+  }, [favorites]);
+
+  useEffect(() => {
+    if (!cartRestored) return;
+    let shouldOpen = initialCartOpen;
+    try {
+      if (window.sessionStorage.getItem('synapse_cart_drawer_open') === 'true') {
+        shouldOpen = true;
+      }
+    } catch {}
+    if (shouldOpen) setCartOpen(true);
   }, [initialCartOpen, cartRestored]);
 
+  // Focus trap, body scroll locking, and Escape key handling
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        if (selectedProduct) setSelectedProduct(null);
-        if (cartOpen) setCartOpen(false);
+        if (searchOpen) closeSearch();
+        if (favoritesOpen) closeFavorites();
+        if (selectedProduct) closeSpecModal();
+        if (cartOpen) closeCart();
         if (mobileMenuOpen) setMobileMenuOpen(false);
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedProduct, cartOpen, mobileMenuOpen]);
+  }, [searchOpen, favoritesOpen, selectedProduct, cartOpen, mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!cartOpen && !selectedProduct && !mobileMenuOpen && !favoritesOpen) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+
+    const container = cartOpen
+      ? cartDrawerRef.current
+      : favoritesOpen
+      ? favoritesDrawerRef.current
+      : selectedProduct
+      ? specModalRef.current
+      : null;
+
+    if (!container) return;
+
+    const focusableSelector =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function handleTrapTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        container?.querySelectorAll<HTMLElement>(focusableSelector) || [],
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    container.addEventListener('keydown', handleTrapTab);
+    return () => {
+      container.removeEventListener('keydown', handleTrapTab);
+      document.body.style.overflow = '';
+    };
+  }, [cartOpen, selectedProduct, mobileMenuOpen, favoritesOpen]);
+
+  function openCart(e?: React.SyntheticEvent) {
+    if (e?.currentTarget instanceof HTMLElement) {
+      cartTriggerRef.current = e.currentTarget as HTMLButtonElement;
+    }
+    setCartOpen(true);
+    try {
+      window.sessionStorage.setItem('synapse_cart_drawer_open', 'true');
+    } catch {}
+  }
+
+  function closeCart() {
+    setCartOpen(false);
+    try {
+      window.sessionStorage.removeItem('synapse_cart_drawer_open');
+    } catch {}
+    cartTriggerRef.current?.focus();
+  }
+
+  function openFavorites(e?: React.SyntheticEvent) {
+    if (e?.currentTarget instanceof HTMLElement) {
+      favoritesTriggerRef.current = e.currentTarget as HTMLButtonElement;
+    }
+    setFavoritesOpen(true);
+  }
+
+  function closeFavorites() {
+    setFavoritesOpen(false);
+    favoritesTriggerRef.current?.focus();
+  }
+
+  function toggleFavorite(productId: string) {
+    const product = productById.get(productId);
+    setFavorites((prev) => {
+      const exists = prev.includes(productId);
+      const next = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
+      if (product) {
+        setToastMessage({
+          title: exists ? `Removed ${product.name}` : `Saved ${product.name}`,
+          subtitle: exists ? 'Removed from saved items' : 'Added to your saved wishlist',
+        });
+        window.setTimeout(() => setToastMessage(null), 3200);
+      }
+      return next;
+    });
+  }
+
+  function openSearch() {
+    setSearchOpen(true);
+    setSearchSelectedIndex(-1);
+    window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 60);
+  }
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchSelectedIndex(-1);
+    searchTriggerRef.current?.focus();
+  }
+
+  function openSpecModal(product: Product, e?: React.SyntheticEvent) {
+    if (e?.currentTarget instanceof HTMLElement) {
+      specModalTriggerRef.current = e.currentTarget;
+    }
+    setSelectedProduct(product);
+  }
+
+  function closeSpecModal() {
+    setSelectedProduct(null);
+    specModalTriggerRef.current?.focus();
+  }
+
+  function setVariant(slug: string, option: string) {
+    setSelectedVariants((prev) => ({ ...prev, [slug]: option }));
+  }
+
+  function emptyCart() {
+    if (!cart.length) return;
+    setDeletedCartBackup([...cart]);
+    setCart([]);
+    setToastMessage({
+      title: 'Shopping bag emptied',
+      subtitle: 'Items cleared from your selection',
+    });
+    window.setTimeout(() => setToastMessage(null), 3500);
+  }
+
+  function undoEmptyCart() {
+    if (deletedCartBackup) {
+      setCart(deletedCartBackup);
+      setDeletedCartBackup(null);
+    }
+  }
 
   const productById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
@@ -280,30 +516,116 @@ export default function SynapseStorefront({
     products.find((product) => product.category.toLowerCase() === 'wearables') ??
     products[0];
 
-  function addToCart(productId: string) {
-    const product = productById.get(productId);
-    setCart((current) => {
-      const found = current.find((line) => line.productId === productId);
-      if (found) {
-        return current.map((line) =>
-          line.productId === productId
-            ? { ...line, quantity: Math.min(line.quantity + 1, 99) }
-            : line,
-        );
-      }
-      return [...current, { productId, quantity: 1 }];
-    });
-    setAddedProduct(productId);
-    setCheckoutError('');
-    setCartOpen(true);
-    if (product) {
-      setToastMessage({
-        title: `Added ${product.name}`,
-        subtitle: `${formatPrice(product.price, currency)} • Added to bag`,
-      });
-      window.setTimeout(() => setToastMessage(null), 3200);
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q),
+    );
+  }, [searchQuery, products]);
+
+  const favoriteItems = useMemo(() => {
+    return favorites
+      .map((id) => productById.get(id))
+      .filter((p): p is Product => Boolean(p));
+  }, [favorites, productById]);
+
+  const availableCategories = useMemo(() => {
+    const cats = Array.from(new Set(products.map((p) => p.category)));
+    return ['All', ...cats];
+  }, [products]);
+
+  const displayedProducts = useMemo(() => {
+    let list = [...products];
+    if (selectedCategory !== 'All') {
+      list = list.filter(
+        (p) => p.category.toLowerCase() === selectedCategory.toLowerCase(),
+      );
     }
-    window.setTimeout(() => setAddedProduct(''), 1400);
+    if (selectedSort === 'price-asc') {
+      list.sort((a, b) => a.price - b.price);
+    } else if (selectedSort === 'price-desc') {
+      list.sort((a, b) => b.price - a.price);
+    } else if (selectedSort === 'name-asc') {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [products, selectedCategory, selectedSort]);
+
+  function handleSearchInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!searchResults.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSearchSelectedIndex((prev) =>
+        prev < searchResults.length - 1 ? prev + 1 : 0,
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSearchSelectedIndex((prev) =>
+        prev > 0 ? prev - 1 : searchResults.length - 1,
+      );
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const target =
+        searchSelectedIndex >= 0
+          ? searchResults[searchSelectedIndex]
+          : searchResults[0];
+      if (target) {
+        closeSearch();
+        openSpecModal(target);
+      }
+    }
+  }
+
+  function addToCart(productId: string) {
+    if (productAddStates[productId] === 'adding') return;
+
+    setProductAddStates((prev) => ({ ...prev, [productId]: 'adding' }));
+    const product = productById.get(productId);
+
+    try {
+      setCart((current) => {
+        const found = current.find((line) => line.productId === productId);
+        if (found) {
+          return current.map((line) =>
+            line.productId === productId
+              ? { ...line, quantity: Math.min(line.quantity + 1, 99) }
+              : line,
+          );
+        }
+        return [...current, { productId, quantity: 1 }];
+      });
+      setAddedProduct(productId);
+      setCheckoutError('');
+      setCartOpen(true);
+      try {
+        window.sessionStorage.setItem('synapse_cart_drawer_open', 'true');
+      } catch {}
+      setProductAddStates((prev) => ({ ...prev, [productId]: 'added' }));
+
+      if (product) {
+        const variant = selectedVariants[product.slug];
+        setToastMessage({
+          title: `Added ${product.name}`,
+          subtitle: `${variant ? `${variant} • ` : ''}${formatPrice(product.price, currency)} • Added to bag`,
+        });
+        window.setTimeout(() => setToastMessage(null), 3200);
+      }
+
+      window.setTimeout(() => {
+        checkoutButtonRef.current?.focus();
+      }, 120);
+
+      window.setTimeout(() => {
+        setProductAddStates((prev) => ({ ...prev, [productId]: 'idle' }));
+        setAddedProduct('');
+      }, 1500);
+    } catch {
+      setProductAddStates((prev) => ({ ...prev, [productId]: 'error' }));
+    }
   }
 
   function adjustQuantity(productId: string, amount: number) {
@@ -374,98 +696,244 @@ export default function SynapseStorefront({
   }
 
   return (
-    <main className="synapse-canvas synapse-store" data-testid="storefront">
-      <header className="site-header">
-        <div className="nav-shell">
-          <div className="site-header-inner">
-            <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-              <span className="brand-mark" aria-hidden="true">S</span>
-              <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
-            </Link>
+    <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <main className="synapse-canvas synapse-store" id="main-content" data-testid="storefront">
+        <header className="site-header" role="banner">
+          <div className="nav-shell">
+            <div className="site-header-inner">
+              <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
+                <SynapseLogo size={28} showWordmark={true} />
+              </Link>
 
-            <nav className="main-nav" aria-label="Main navigation">
-              <a className="nav-link" href="/#devices">Devices</a>
-              <a className="nav-link" href="/#technology">Technology</a>
-            </nav>
+              <nav className="main-nav" aria-label="Main navigation">
+                <a className="nav-link" href="/#devices">Devices</a>
+                <a className="nav-link" href="/#technology">Technology</a>
+                <Link className="nav-link nav-link-brand" href="/brand">Brand Sheet</Link>
+              </nav>
 
-          <div className="header-actions">
-            <div className="currency-switch" aria-label="Display currency">
+            <div className="header-actions">
+              {/* Live Search Wrapper */}
+              <div className="search-wrapper" role="search">
+                <button
+                  ref={searchTriggerRef}
+                  aria-label={searchOpen ? 'Close search' : 'Search hardware devices'}
+                  aria-expanded={searchOpen}
+                  aria-haspopup="dialog"
+                  className="icon-button search-toggle-btn"
+                  data-testid="button-open-search"
+                  onClick={() => {
+                    if (searchOpen) closeSearch();
+                    else openSearch();
+                  }}
+                  type="button"
+                >
+                  {searchOpen ? <X size={18} aria-hidden="true" /> : <Search size={18} aria-hidden="true" />}
+                </button>
+
+                {searchOpen && (
+                  <div
+                    className="search-popover"
+                    role="combobox"
+                    aria-expanded="true"
+                    aria-haspopup="listbox"
+                    aria-owns="search-results-listbox"
+                  >
+                    <div className="search-input-box">
+                      <Search size={16} className="search-input-icon" aria-hidden="true" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        className="search-input-field"
+                        placeholder="Search devices, category, specs…"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setSearchSelectedIndex(-1);
+                        }}
+                        onKeyDown={handleSearchInputKeyDown}
+                        aria-label="Search hardware devices"
+                        aria-autocomplete="list"
+                        aria-controls="search-results-listbox"
+                        autoComplete="off"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          className="search-clear-btn"
+                          onClick={() => {
+                            setSearchQuery('');
+                            setSearchSelectedIndex(-1);
+                            searchInputRef.current?.focus();
+                          }}
+                          aria-label="Clear search input"
+                        >
+                          <X size={14} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+
+                    {searchQuery.trim() && (
+                      <div
+                        id="search-results-listbox"
+                        className="search-results-list"
+                        role="listbox"
+                        aria-label="Search results"
+                      >
+                        {searchResults.length ? (
+                          searchResults.map((result, idx) => {
+                            const isSelected = idx === searchSelectedIndex;
+                            return (
+                              <button
+                                key={result.id}
+                                type="button"
+                                role="option"
+                                aria-selected={isSelected}
+                                className={`search-result-item${isSelected ? ' is-selected' : ''}`}
+                                onClick={() => {
+                                  closeSearch();
+                                  openSpecModal(result);
+                                }}
+                              >
+                                <img
+                                  src={result.image}
+                                  alt=""
+                                  className="search-result-thumb"
+                                  aria-hidden="true"
+                                />
+                                <div className="search-result-info">
+                                  <span className="search-result-name">{result.name}</span>
+                                  <span className="search-result-meta">{result.category}</span>
+                                </div>
+                                <span className="search-result-price">
+                                  {formatPrice(result.price, currency)}
+                                </span>
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="search-empty-state" role="status">
+                            No devices found for &ldquo;{searchQuery}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Favorites / Wishlist Nav Trigger */}
               <button
-                aria-pressed={currency === 'KWD'}
-                data-testid="button-currency-kwd"
-                onClick={() => setCurrency('KWD')}
+                ref={favoritesTriggerRef}
+                aria-label={`Saved items, ${favorites.length} ${favorites.length === 1 ? 'item' : 'items'}`}
+                aria-expanded={favoritesOpen}
+                className="icon-button wishlist-button"
+                data-testid="button-open-favorites"
+                onClick={openFavorites}
                 type="button"
               >
-                KWD
+                <Heart size={18} aria-hidden="true" fill={favorites.length ? 'currentColor' : 'none'} />
+                {favorites.length > 0 && (
+                  <span
+                    className="wishlist-count-badge"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {favorites.length}
+                  </span>
+                )}
               </button>
+
+              <div className="currency-switch" role="group" aria-label="Display currency">
+                <button
+                  aria-pressed={currency === 'KWD'}
+                  data-testid="button-currency-kwd"
+                  onClick={() => setCurrency('KWD')}
+                  type="button"
+                >
+                  KWD
+                </button>
+                <button
+                  aria-pressed={currency === 'USD'}
+                  data-testid="button-currency-usd"
+                  onClick={() => setCurrency('USD')}
+                  type="button"
+                >
+                  USD
+                </button>
+              </div>
+
+              {!accountLoading &&
+                (account ? (
+                  <>
+                    <div className="nav-user-pill" title={account.name}>
+                      <span className="nav-user-avatar" aria-hidden="true">
+                        {account.name.trim().charAt(0) || 'U'}
+                      </span>
+                      <span className="nav-user-name">{account.name}</span>
+                    </div>
+                    <Link
+                      aria-label="My orders"
+                      className="icon-button orders-nav-button"
+                      href="/orders"
+                      title="My orders"
+                    >
+                      <PackageCheck size={18} aria-hidden="true" />
+                      <span className="action-label">Orders</span>
+                    </Link>
+                    <button
+                      aria-label="Log out of account"
+                      className="icon-button logout-button"
+                      disabled={signingOut}
+                      onClick={() => void signOut()}
+                      title="Log out"
+                      type="button"
+                    >
+                      <LogOut size={17} aria-hidden="true" />
+                    </button>
+                  </>
+                ) : (
+                  <Link className="signin-link" href="/login">
+                    <UserRound size={17} aria-hidden="true" />
+                    <span>Sign in</span>
+                  </Link>
+                ))}
+
               <button
-                aria-pressed={currency === 'USD'}
-                data-testid="button-currency-usd"
-                onClick={() => setCurrency('USD')}
+                ref={cartTriggerRef}
+                aria-label={`Shopping bag, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}
+                aria-expanded={cartOpen}
+                aria-controls="cart-drawer-dialog"
+                className="icon-button cart-button"
+                data-testid="button-open-cart"
+                onClick={openCart}
                 type="button"
               >
-                USD
+                <ShoppingBag size={18} aria-hidden="true" />
+                <span
+                  className="cart-count"
+                  data-testid="text-cart-count"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {cartCount}
+                </span>
+              </button>
+
+              <button
+                aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={mobileMenuOpen}
+                className="icon-button mobile-menu-toggle"
+                onClick={() => setMobileMenuOpen((current) => !current)}
+                type="button"
+              >
+                {mobileMenuOpen ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}
               </button>
             </div>
-
-            {!accountLoading &&
-              (account ? (
-                <>
-                  <div className="nav-user-pill" title={account.name}>
-                    <span className="nav-user-avatar" aria-hidden="true">
-                      {account.name.trim().charAt(0) || 'U'}
-                    </span>
-                    <span className="nav-user-name">{account.name}</span>
-                  </div>
-                  <Link
-                    aria-label="My orders"
-                    className="icon-button orders-nav-button"
-                    href="/orders"
-                    title="My orders"
-                  >
-                    <PackageCheck size={18} aria-hidden="true" />
-                    <span className="action-label">Orders</span>
-                  </Link>
-                  <button
-                    aria-label="Log out"
-                    className="icon-button logout-button"
-                    disabled={signingOut}
-                    onClick={() => void signOut()}
-                    title="Log out"
-                    type="button"
-                  >
-                    <LogOut size={17} aria-hidden="true" />
-                  </button>
-                </>
-              ) : (
-                <Link className="signin-link" href="/login">
-                  <UserRound size={17} aria-hidden="true" />
-                  <span>Sign in</span>
-                </Link>
-              ))}
-
-            <button
-              aria-label={`Open cart${cartCount ? `, ${cartCount} items` : ''}`}
-              className="icon-button cart-button"
-              data-testid="button-open-cart"
-              onClick={() => setCartOpen(true)}
-              type="button"
-            >
-              <ShoppingBag size={18} aria-hidden="true" />
-              <span className="cart-count" data-testid="text-cart-count">{cartCount}</span>
-            </button>
-
-            <button
-              aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              className="icon-button mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              type="button"
-            >
-              {mobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
-            </button>
           </div>
-        </div>
+
 
         {mobileMenuOpen && (
           <div className="mobile-nav-tray" aria-label="Mobile navigation">
@@ -486,6 +954,14 @@ export default function SynapseStorefront({
                 <span>Technology</span>
                 <ChevronRight size={15} aria-hidden="true" />
               </a>
+              <Link
+                className="mobile-nav-link"
+                href="/brand"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>Brand Sheet</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </Link>
             </nav>
 
             <div className="mobile-nav-divider" />
@@ -666,6 +1142,68 @@ export default function SynapseStorefront({
           </div>
         )}
 
+        {/* Category Filter Chips & Sort Controls */}
+        <div className="catalog-toolbar" role="region" aria-label="Catalog filters and sorting">
+          <div className="category-filter-chips" role="radiogroup" aria-label="Filter devices by category">
+            {availableCategories.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  className={`filter-chip${isSelected ? ' is-active' : ''}`}
+                  onClick={() => setSelectedCategory(cat)}
+                >
+                  {cat !== 'All' && categoryIcon(cat)}
+                  <span>{cat}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="catalog-sort-group">
+            <label htmlFor="catalog-sort-select" className="catalog-sort-label">
+              Sort:
+            </label>
+            <select
+              id="catalog-sort-select"
+              className="catalog-sort-select"
+              value={selectedSort}
+              onChange={(e) => setSelectedSort(e.target.value)}
+              aria-label="Sort devices"
+            >
+              <option value="featured">Featured Order</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Live Filter Meta Strip */}
+        <div className="catalog-meta-strip" aria-live="polite">
+          <span>
+            Showing {displayedProducts.length} of {products.length} {products.length === 1 ? 'device' : 'devices'}
+            {selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}
+          </span>
+          {(selectedCategory !== 'All' || selectedSort !== 'featured') && (
+            <button
+              type="button"
+              className="reset-filters-btn"
+              onClick={() => {
+                setSelectedCategory('All');
+                setSelectedSort('featured');
+              }}
+              aria-label="Reset all catalog filters"
+            >
+              <RotateCcw size={13} aria-hidden="true" />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
+
         {loadingProducts ? (
           <div aria-label="Loading devices" className="product-grid product-grid-skeleton" aria-busy="true">
             {[0, 1, 2].map((item) => (
@@ -677,66 +1215,158 @@ export default function SynapseStorefront({
               </div>
             ))}
           </div>
+        ) : displayedProducts.length === 0 ? (
+          <div className="product-empty-filter" style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <p style={{ color: 'var(--synapse-steel)', fontSize: '15px' }}>
+              No hardware matches this filter criteria.
+            </p>
+            <button
+              type="button"
+              className="button-primary"
+              style={{ marginTop: '14px' }}
+              onClick={() => {
+                setSelectedCategory('All');
+                setSelectedSort('featured');
+              }}
+            >
+              Reset filters
+            </button>
+          </div>
         ) : (
           <div className="product-grid">
-            {products.map((product) => (
-              <article className="product-card" key={product.id}>
-                <div
-                  className="product-card__visual"
-                  onClick={() => setSelectedProduct(product)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setSelectedProduct(product);
-                    }
-                  }}
-                  aria-label={`View detailed specifications for ${product.name}`}
-                >
-                  <div className="product-card__badges">
-                    <span className="product-card__category">{product.category}</span>
-                    <span className="product-card__status">
-                      <span className="status-indicator-dot" /> AVAILABLE
-                    </span>
-                  </div>
-                  <div className="product-card__img-container">
-                    <img alt={product.name} loading="lazy" src={product.image} />
-                  </div>
-                  <div className="product-card__action">
-                    <span>View product specs ↗</span>
-                  </div>
-                </div>
-                <div className="product-card-content">
-                  <div className="product-card-meta">
-                    <span className="category-label">{product.category}</span>
-                    <span className="product-category-icon">{categoryIcon(product.category)}</span>
-                  </div>
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                  <div className="product-card-footer">
-                    <div className="price-stack">
-                      <span className="price-label">UNIT PRICE</span>
-                      <strong data-testid={`text-price-${product.slug}`}>
-                        {formatPrice(product.price, currency)}
-                      </strong>
+            {displayedProducts.map((product) => {
+              const addState = productAddStates[product.id] || 'idle';
+              const variantInfo = PRODUCT_VARIANTS[product.slug];
+              const currentVariant = selectedVariants[product.slug] || variantInfo?.default;
+              const isFavorited = favorites.includes(product.id);
+
+              return (
+                <article className="product-card" key={product.id}>
+                  <div
+                    className="product-card__visual"
+                    onClick={(e) => openSpecModal(product, e)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openSpecModal(product, e);
+                      }
+                    }}
+                    aria-label={`View detailed specifications for ${product.name}`}
+                  >
+                    <div className="product-card__badges">
+                      <span className="product-card__category">{product.category}</span>
+                      <span className="product-card__status">
+                        <span className="status-indicator-dot" aria-hidden="true" /> AVAILABLE
+                      </span>
                     </div>
+
                     <button
-                      className={`add-button${addedProduct === product.id ? ' is-added' : ''}`}
-                      data-testid={`button-add-${product.slug}`}
-                      onClick={() => addToCart(product.id)}
                       type="button"
+                      className={`favorite-toggle-btn product-card-favorite-pos${isFavorited ? ' is-active' : ''}`}
+                      aria-pressed={isFavorited}
+                      aria-label={isFavorited ? `Remove ${product.name} from saved items` : `Save ${product.name} to wishlist`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
                     >
-                      {addedProduct === product.id ? (
-                        <>Added <Check size={16} aria-hidden="true" /></>
-                      ) : (
-                        <>Add to cart <ArrowRight size={16} aria-hidden="true" /></>
-                      )}
+                      <Heart
+                        size={17}
+                        fill={isFavorited ? '#E11D48' : 'none'}
+                        color={isFavorited ? '#E11D48' : 'currentColor'}
+                        aria-hidden="true"
+                      />
                     </button>
+
+                    <div className="product-card__img-container">
+                      <img alt={product.name} loading="lazy" src={product.image} />
+                    </div>
+                    <div className="product-card__action">
+                      <span>View product specs ↗</span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                  <div className="product-card-content">
+                    <div className="product-card-meta">
+                      <span className="category-label">{product.category}</span>
+                      <span className="product-category-icon">{categoryIcon(product.category)}</span>
+                    </div>
+                    <h3>{product.name}</h3>
+                    <p>{product.description}</p>
+
+                    {variantInfo && (
+                      <div
+                        className="product-card-variants"
+                        role="radiogroup"
+                        aria-label={`${product.name} ${variantInfo.name}`}
+                      >
+                        <span className="variant-label">{variantInfo.name}:</span>
+                        <div className="variant-pills">
+                          {variantInfo.options.map((option) => {
+                            const isSelected = currentVariant === option;
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                role="radio"
+                                aria-checked={isSelected}
+                                className={`variant-pill${isSelected ? ' is-active' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setVariant(product.slug, option);
+                                }}
+                              >
+                                {option}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="product-card-footer">
+                      <div className="price-stack">
+                        <span className="price-label">UNIT PRICE</span>
+                        <strong data-testid={`text-price-${product.slug}`}>
+                          {formatPrice(product.price, currency)}
+                        </strong>
+                      </div>
+                      <button
+                        className={`add-button${addState === 'added' ? ' is-added' : ''}`}
+                        data-testid={`button-add-${product.slug}`}
+                        disabled={addState === 'adding'}
+                        onClick={() => addToCart(product.id)}
+                        type="button"
+                        aria-label={`Add ${product.name} to bag`}
+                      >
+                        {addState === 'adding' ? (
+                          <>
+                            <span className="button-spinner" aria-hidden="true" />
+                            <span>Adding…</span>
+                          </>
+                        ) : addState === 'added' ? (
+                          <>
+                            <span>Added to Bag</span>
+                            <Check size={16} aria-hidden="true" />
+                          </>
+                        ) : addState === 'error' ? (
+                          <>
+                            <span>Try again</span>
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </>
+                        ) : (
+                          <>
+                            <span>Add to cart</span>
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -945,6 +1575,74 @@ export default function SynapseStorefront({
         </div>
       </section>
 
+      {/* Secondary Trust & Value Strip (Rubric Step 2) */}
+      <section className="trust-strip-section page-container" aria-label="Customer service commitments">
+        <div className="trust-strip-grid">
+          <div className="trust-item">
+            <div className="trust-icon-box">
+              <Truck size={18} aria-hidden="true" />
+            </div>
+            <strong>Complimentary Global Courier</strong>
+            <p>Priority insured air dispatch to all destinations with end-to-end telemetry tracking.</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon-box">
+              <Undo2 size={18} aria-hidden="true" />
+            </div>
+            <strong>30-Day Tactile Fit Guarantee</strong>
+            <p>Try your instrument in daily life. Zero-friction size exchanges with pre-paid return kit.</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon-box">
+              <ShieldCheck size={18} aria-hidden="true" />
+            </div>
+            <strong>2-Year Hardware Warranty</strong>
+            <p>Full manufacturing coverage against ceramic micro-fissures or sensor node calibration drift.</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon-box">
+              <Lock size={18} aria-hidden="true" />
+            </div>
+            <strong>Cryptographic Privacy</strong>
+            <p>All biometric and spatial telemetry is processed on-device with zero cloud behavioral mining.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Optional Brand Film Slot (Rubric Step 5) - Renders ONLY if public/ad/brand-ad.mp4 exists */}
+      {hasBrandAd && (
+        <section className="brand-ad-section page-container" aria-label="Synapse Labs brand film">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">BRAND FILM // 11 SECONDS // 16:9 WIDESCREEN</span>
+              <h2>Intelligence, in form.</h2>
+            </div>
+            <p>A cinematic glimpse into the industrial craft and telemetry behind Synapse Labs.</p>
+          </div>
+          <div className="brand-ad-video-container">
+            <video
+              controls
+              muted
+              playsInline
+              preload="metadata"
+              poster="/images/synapse/hero-synapse.svg"
+              className="brand-ad-video"
+              aria-label="Synapse Labs 11-second brand film (16:9 landscape)"
+            >
+              <source src="/ad/brand-ad.mp4" type="video/mp4" />
+              <track
+                kind="captions"
+                src="/ad/brand-ad-captions.vtt"
+                srcLang="en"
+                label="English captions"
+                default
+              />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </section>
+      )}
+
       <section className="closing-section page-container">
         <div>
           <span className="eyebrow">SYNAPSE LABS</span>
@@ -958,10 +1656,10 @@ export default function SynapseStorefront({
       <footer className="site-footer">
         <div className="page-container footer-inner">
           <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <span className="brand-mark" aria-hidden="true">S</span>
-            <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+            <SynapseLogo size={24} showWordmark={true} />
           </Link>
           <span>Considered technology for everyday life.</span>
+          <Link href="/brand">Brand Sheet</Link>
           <a href="#devices">Devices <ChevronRight size={14} aria-hidden="true" /></a>
           <small>© {new Date().getFullYear()} Synapse Labs</small>
         </div>
@@ -972,34 +1670,57 @@ export default function SynapseStorefront({
           className="cart-backdrop"
           data-testid="cart-overlay"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setCartOpen(false);
+            if (event.target === event.currentTarget) closeCart();
           }}
         >
           <section
+            ref={cartDrawerRef}
             aria-label="Shopping cart"
             aria-modal="true"
             className="cart-drawer"
             data-testid="cart-drawer"
             role="dialog"
+            id="cart-drawer-dialog"
           >
             <header className="cart-header">
               <div>
                 <span className="eyebrow">YOUR SELECTION</span>
                 <h2>Shopping bag <span>({cartCount})</span></h2>
               </div>
-              <button
-                aria-label="Close cart"
-                className="icon-button"
-                data-testid="button-close-cart"
-                onClick={() => setCartOpen(false)}
-                type="button"
-              >
-                <X size={19} aria-hidden="true" />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {Boolean(cartItems.length) && (
+                  <button
+                    type="button"
+                    className="empty-cart-action"
+                    onClick={emptyCart}
+                    aria-label="Empty shopping bag"
+                  >
+                    Empty bag
+                  </button>
+                )}
+                <button
+                  aria-label="Close cart"
+                  className="icon-button"
+                  data-testid="button-close-cart"
+                  onClick={closeCart}
+                  type="button"
+                >
+                  <X size={19} aria-hidden="true" />
+                </button>
+              </div>
             </header>
 
+            {deletedCartBackup && (
+              <div className="cart-undo-banner" role="status">
+                <span>Shopping bag emptied</span>
+                <button type="button" className="undo-btn" onClick={undoEmptyCart}>
+                  Undo
+                </button>
+              </div>
+            )}
+
             <div className="cart-body">
-              {cartItems.length ? (
+              {cartItems.length > 0 || cart.length > 0 ? (
                 <>
                   <div className="cart-lines">
                     {cartItems.map((line) => (
@@ -1037,9 +1758,25 @@ export default function SynapseStorefront({
                         </div>
                       </article>
                     ))}
+                    {!cartItems.length && cart.length > 0 && (
+                      <div className="cart-lines-loading" style={{ padding: '24px', textAlign: 'center', color: 'var(--synapse-steel)' }}>
+                        Loading bag contents…
+                      </div>
+                    )}
                   </div>
 
-                  {checkoutError && <p className="checkout-error" role="alert">{checkoutError}</p>}
+                  {checkoutError && (
+                    <div className="checkout-error-banner" role="alert">
+                      <span>{checkoutError}</span>
+                      <button
+                        type="button"
+                        className="error-retry-btn"
+                        onClick={() => void startCheckout()}
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
                   <div className="cart-checkout">
                     <div className="cart-subtotal">
                       <span>Subtotal</span>
@@ -1048,20 +1785,38 @@ export default function SynapseStorefront({
                       </strong>
                     </div>
                     <p>Shipping and taxes are calculated separately.</p>
-                    <button
-                      className="button-primary place-order-button"
-                      data-testid="button-checkout"
-                      disabled={startingCheckout}
-                      onClick={() => void startCheckout()}
-                      type="button"
-                    >
-                      {startingCheckout
-                        ? 'Opening secure checkout…'
-                        : account
-                        ? 'Secure checkout'
-                        : 'Sign in to checkout'}
-                      {!startingCheckout && <ArrowRight size={17} aria-hidden="true" />}
-                    </button>
+                    {account ? (
+                      <button
+                        ref={checkoutButtonRef}
+                        className="button-primary place-order-button"
+                        data-testid="button-checkout"
+                        disabled={startingCheckout}
+                        onClick={() => void startCheckout()}
+                        type="button"
+                      >
+                        {startingCheckout ? (
+                          <>
+                            <span className="button-spinner" aria-hidden="true" />
+                            <span>Opening secure checkout…</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Secure checkout</span>
+                            <ArrowRight size={17} aria-hidden="true" />
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <a
+                        ref={checkoutButtonRef as unknown as React.Ref<HTMLAnchorElement>}
+                        className="button-primary place-order-button"
+                        data-testid="button-checkout"
+                        href="/login?next=%2Fcart"
+                      >
+                        <span>Sign in to checkout</span>
+                        <ArrowRight size={17} aria-hidden="true" />
+                      </a>
+                    )}
                     <div className="cart-currency-switch">
                       <span>Display in</span>
                       <button
@@ -1084,7 +1839,7 @@ export default function SynapseStorefront({
                   <p>Choose a device to get started.</p>
                   <button
                     className="text-button"
-                    onClick={() => setCartOpen(false)}
+                    onClick={closeCart}
                     type="button"
                   >
                     Explore devices <ArrowRight size={15} aria-hidden="true" />
@@ -1097,9 +1852,10 @@ export default function SynapseStorefront({
       )}
       {selectedProduct && (
         <div
+          ref={specModalRef}
           className="modal-backdrop"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedProduct(null);
+            if (e.target === e.currentTarget) closeSpecModal();
           }}
           role="dialog"
           aria-modal="true"
@@ -1108,7 +1864,7 @@ export default function SynapseStorefront({
           <div className="spec-modal">
             <button
               className="icon-button modal-close-btn"
-              onClick={() => setSelectedProduct(null)}
+              onClick={closeSpecModal}
               aria-label="Close product specifications"
               type="button"
             >
@@ -1187,23 +1943,127 @@ export default function SynapseStorefront({
                       {formatPrice(selectedProduct.price, currency)}
                     </strong>
                   </div>
-                  <button
-                    className={`button-primary spec-add-btn${addedProduct === selectedProduct.id ? ' is-added' : ''}`}
-                    onClick={() => {
-                      addToCart(selectedProduct.id);
-                    }}
-                    type="button"
-                  >
-                    {addedProduct === selectedProduct.id ? (
-                      <>Added to Bag <Check size={16} aria-hidden="true" /></>
-                    ) : (
-                      <>Add to Bag <ArrowRight size={16} aria-hidden="true" /></>
-                    )}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      className={`favorite-toggle-btn${favorites.includes(selectedProduct.id) ? ' is-active' : ''}`}
+                      onClick={() => toggleFavorite(selectedProduct.id)}
+                      type="button"
+                      aria-label={favorites.includes(selectedProduct.id) ? 'Remove from saved items' : 'Save to wishlist'}
+                      aria-pressed={favorites.includes(selectedProduct.id)}
+                    >
+                      <Heart
+                        size={18}
+                        fill={favorites.includes(selectedProduct.id) ? '#E11D48' : 'none'}
+                        color={favorites.includes(selectedProduct.id) ? '#E11D48' : 'currentColor'}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <button
+                      className={`button-primary spec-add-btn${addedProduct === selectedProduct.id ? ' is-added' : ''}`}
+                      onClick={() => {
+                        addToCart(selectedProduct.id);
+                      }}
+                      type="button"
+                    >
+                      {addedProduct === selectedProduct.id ? (
+                        <>Added to Bag <Check size={16} aria-hidden="true" /></>
+                      ) : (
+                        <>Add to Bag <ArrowRight size={16} aria-hidden="true" /></>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Favorites / Saved Items Drawer (Rubric Step 4 - Interaction 4) */}
+      {favoritesOpen && (
+        <div
+          className="favorites-drawer-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeFavorites();
+          }}
+          data-testid="favorites-overlay"
+        >
+          <section
+            ref={favoritesDrawerRef}
+            className="favorites-drawer"
+            role="dialog"
+            aria-label="Saved items wishlist"
+            aria-modal="true"
+          >
+            <header className="favorites-header">
+              <div>
+                <span className="eyebrow">SAVED HARDWARE</span>
+                <h2>Saved Items <span>({favorites.length})</span></h2>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={closeFavorites}
+                aria-label="Close saved items drawer"
+              >
+                <X size={19} aria-hidden="true" />
+              </button>
+            </header>
+
+            <div className="favorites-body">
+              {favoriteItems.length ? (
+                favoriteItems.map((prod) => (
+                  <article className="favorites-item" key={prod.id}>
+                    <img src={prod.image} alt="" className="favorites-item-thumb" aria-hidden="true" />
+                    <div className="favorites-item-info">
+                      <span className="category-label">{prod.category}</span>
+                      <strong>{prod.name}</strong>
+                      <span>{formatPrice(prod.price, currency)}</span>
+                    </div>
+                    <div className="favorites-item-actions">
+                      <button
+                        type="button"
+                        className="button-primary favorites-add-btn"
+                        onClick={() => {
+                          addToCart(prod.id);
+                        }}
+                        aria-label={`Add ${prod.name} to bag`}
+                      >
+                        Add to bag
+                      </button>
+                      <button
+                        type="button"
+                        className="favorites-remove-btn"
+                        onClick={() => toggleFavorite(prod.id)}
+                        aria-label={`Remove ${prod.name} from saved items`}
+                      >
+                        <X size={15} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="favorites-empty">
+                  <div className="favorites-empty-icon">
+                    <Heart size={24} aria-hidden="true" />
+                  </div>
+                  <h3>Your wishlist is quiet.</h3>
+                  <p>Tap the heart icon on any hardware instrument to save it for quick access.</p>
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => {
+                      closeFavorites();
+                      const el = document.getElementById('devices');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    Explore collection <ArrowRight size={15} aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       )}
 
@@ -1228,6 +2088,30 @@ export default function SynapseStorefront({
           </button>
         </aside>
       )}
+
+      {featuredProduct && (
+        <aside className="mobile-sticky-bar" aria-label="Quick order action">
+          <div className="mobile-sticky-info">
+            <span className="mobile-sticky-name">{featuredProduct.name}</span>
+            <strong className="mobile-sticky-price">{formatPrice(featuredProduct.price, currency)}</strong>
+          </div>
+          <button
+            type="button"
+            className="button-primary mobile-sticky-btn"
+            onClick={() => addToCart(featuredProduct.id)}
+            disabled={productAddStates[featuredProduct.id] === 'adding'}
+          >
+            {productAddStates[featuredProduct.id] === 'adding' ? (
+              <span className="button-spinner" aria-hidden="true" />
+            ) : productAddStates[featuredProduct.id] === 'added' ? (
+              'Added ✓'
+            ) : (
+              `Add to Bag — ${formatPrice(featuredProduct.price, currency)}`
+            )}
+          </button>
+        </aside>
+      )}
     </main>
+    </>
   );
 }

@@ -6,7 +6,8 @@ const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   reporter: 'list',
   use: {
     ...devices['Desktop Chrome'],
@@ -20,7 +21,9 @@ export default defineConfig({
     ? undefined
     : {
         command:
-          'PORT=4179 NEXT_TELEMETRY_DISABLED=1 pnpm exec next dev --hostname 127.0.0.1 --port 4179',
+          process.platform === 'win32'
+            ? 'cmd /c npx pnpm exec next dev --hostname 127.0.0.1 --port 4179'
+            : 'pnpm exec next dev --hostname 127.0.0.1 --port 4179',
         url: 'http://127.0.0.1:4179',
         reuseExistingServer: !process.env.CI,
         timeout: 30_000,

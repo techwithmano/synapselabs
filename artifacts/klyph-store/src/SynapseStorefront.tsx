@@ -245,6 +245,22 @@ export default function SynapseStorefront({
   const [isCatalogInView, setIsCatalogInView] = useState(false);
   const [isFooterInView, setIsFooterInView] = useState(false);
 
+  // Brand ad video visibility state
+  const [adAvailable, setAdAvailable] = useState<boolean>(hasBrandAd);
+
+  useEffect(() => {
+    setAdAvailable(hasBrandAd);
+  }, [hasBrandAd]);
+
+  useEffect(() => {
+    if (adAvailable) return;
+    void fetch('/ad/brand-ad.mp4', { method: 'HEAD' })
+      .then((res) => {
+        if (res.ok) setAdAvailable(true);
+      })
+      .catch(() => {});
+  }, [adAvailable]);
+
   // Category filter & sort state
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSort, setSelectedSort] = useState<string>('featured');
@@ -846,9 +862,9 @@ export default function SynapseStorefront({
               </Link>
 
               <nav className="main-nav" aria-label="Main navigation">
-                <a className="nav-link" href="/#devices">Devices</a>
-                <a className="nav-link" href="/#technology">Technology</a>
-                <Link className="nav-link nav-link-brand" href="/brand">Brand &amp; Design</Link>
+                <a className="nav-link" href="/#devices">Collection</a>
+                <a className="nav-link" href="/#philosophy">Philosophy</a>
+                <a className="nav-link" href="/#telemetry">Telemetry Lab</a>
                 <Link className="nav-link" href="/support">Support</Link>
               </nav>
 
@@ -1110,31 +1126,39 @@ export default function SynapseStorefront({
                 href="/#devices"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>Devices</span>
+                <span>Hardware Collection</span>
                 <ChevronRight size={15} aria-hidden="true" />
               </a>
               <a
                 className="mobile-nav-link"
-                href="/#technology"
+                href="/#philosophy"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>Technology</span>
+                <span>Our Philosophy</span>
                 <ChevronRight size={15} aria-hidden="true" />
               </a>
-              <Link
+              <a
                 className="mobile-nav-link"
-                href="/brand"
+                href="/#telemetry"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>Brand &amp; Design</span>
+                <span>Telemetry Lab</span>
                 <ChevronRight size={15} aria-hidden="true" />
-              </Link>
+              </a>
               <Link
                 className="mobile-nav-link"
                 href="/support"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>Support &amp; FAQ</span>
+                <span>Support &amp; Sizing</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </Link>
+              <Link
+                className="mobile-nav-link"
+                href="/privacy"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>Privacy Policy</span>
                 <ChevronRight size={15} aria-hidden="true" />
               </Link>
             </nav>
@@ -1556,6 +1580,107 @@ export default function SynapseStorefront({
             })}
           </div>
         )}
+      </section>
+
+      {/* 4. Philosophy & Purpose Section (Customer Story, Who It's For, Concept & Sovereign Privacy) */}
+      <section className="philosophy-section page-container" id="philosophy" aria-label="Our Philosophy and Target Audience">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              OUR PHILOSOPHY // ENGINEERED CALM
+            </span>
+            <h2>Form. Privacy. Restraint.</h2>
+          </div>
+          <p>We engineer screen-free instruments for minds doing deep, uninterrupted work.</p>
+        </div>
+
+        <div className="philosophy-grid">
+          {/* Who It's For Card */}
+          <article className="philosophy-card philosophy-card--featured">
+            <div className="philosophy-card-icon">
+              <Fingerprint size={22} aria-hidden="true" />
+            </div>
+            <span className="philosophy-card-tag">WHO WE BUILD FOR</span>
+            <h3>The Deep Thinker &amp; Knowledge Worker</h3>
+            <p>
+              Built for creative technologists, researchers, writers, and high-performance practitioners who reject notification fatigue and wrist vibration anxiety. Synapse instruments collect continuous physiological ground truth in total silence, keeping you immersed in your flow state.
+            </p>
+            <ul className="philosophy-features-list">
+              <li><Check size={14} className="philosophy-check-icon" aria-hidden="true" /> Zero glowing screens, zero buzzing alerts, zero visual interruption</li>
+              <li><Check size={14} className="philosophy-check-icon" aria-hidden="true" /> Sintered biocompatible ceramics engineered for continuous sleep &amp; focus</li>
+              <li><Check size={14} className="philosophy-check-icon" aria-hidden="true" /> Sovereign telemetry without reaching for a display</li>
+            </ul>
+          </article>
+
+          {/* Concept & Purpose Card */}
+          <article className="philosophy-card">
+            <div className="philosophy-card-icon">
+              <Sparkles size={22} aria-hidden="true" />
+            </div>
+            <span className="philosophy-card-tag">CONCEPT &amp; PURPOSE</span>
+            <h3>Continuous Telemetry in Tactile Substance</h3>
+            <p>
+              Technology should be tangible, durable, and calm. Our instruments pair high-density multi-spectral optical PPG with sintered zirconia ceramics and aerospace-grade titanium—delivering 7 days of lab-grade autonomic telemetry in an unyielding, water-resistant monolithic form.
+            </p>
+            <div className="philosophy-stat-strip">
+              <div className="philosophy-stat">
+                <strong>10 ATM</strong>
+                <span>Water Resistance</span>
+              </div>
+              <div className="philosophy-stat">
+                <strong>7 Days</strong>
+                <span>Continuous Battery</span>
+              </div>
+              <div className="philosophy-stat">
+                <strong>0 Screens</strong>
+                <span>Zero Anxiety</span>
+              </div>
+            </div>
+          </article>
+
+          {/* Sovereign Privacy Card */}
+          <article className="philosophy-card">
+            <div className="philosophy-card-icon">
+              <ShieldCheck size={22} aria-hidden="true" />
+            </div>
+            <span className="philosophy-card-tag">THE SOVEREIGN PROMISE</span>
+            <h3>On-Device Privacy. Zero Subscriptions.</h3>
+            <p>
+              Your biometric telemetry belongs strictly to you. All physiological calculations, HRV analysis, and sleep staging compute on-device. We never harvest, monetize, or transmit your raw biometrics to cloud servers, and we will never lock your hardware behind a monthly subscription.
+            </p>
+            <div className="philosophy-cta-row">
+              <Link href="/privacy" className="philosophy-text-link">
+                Read our Biometric Sovereignty Policy <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+            </div>
+          </article>
+        </div>
+
+        {/* 3 Personality Tenets */}
+        <div className="philosophy-tenets">
+          <div className="philosophy-tenet-item">
+            <div className="tenet-number">01</div>
+            <div className="tenet-body">
+              <h4>Quiet</h4>
+              <p>Restrained, serene, distraction-free. No buzzing rings or urgency triggers.</p>
+            </div>
+          </div>
+          <div className="philosophy-tenet-item">
+            <div className="tenet-number">02</div>
+            <div className="tenet-body">
+              <h4>Precise</h4>
+              <p>Sub-millimeter calibration, 530nm/660nm optical sensors, and scientific truth.</p>
+            </div>
+          </div>
+          <div className="philosophy-tenet-item">
+            <div className="tenet-number">03</div>
+            <div className="tenet-body">
+              <h4>Confident</h4>
+              <p>Monolithic sintered ceramics and titanium engineered for a lifetime of wear.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="technology-section" id="technology">
@@ -2043,13 +2168,13 @@ export default function SynapseStorefront({
               )}
             </div>
           </div>
+        </div>
 
-          <div className="telemetry-lab-cta">
-            <p>Hardware engineered for a lifetime of quiet wear.</p>
-            <a className="button-primary" href="#devices">
-              Explore Hardware Collection <ArrowRight size={16} aria-hidden="true" />
-            </a>
-          </div>
+        <div className="telemetry-lab-cta">
+          <p>Hardware engineered for a lifetime of quiet wear.</p>
+          <a className="button-primary" href="#devices">
+            Explore Hardware Collection <ArrowRight size={16} aria-hidden="true" />
+          </a>
         </div>
       </section>
 
@@ -2087,8 +2212,8 @@ export default function SynapseStorefront({
         </div>
       </section>
 
-      {/* Optional Brand Film Slot (Rubric Step 5) - Renders ONLY if public/ad/brand-ad.mp4 exists */}
-      {hasBrandAd && (
+      {/* Optional Brand Film Slot (Rubric Step 5) - Renders when /ad/brand-ad.mp4 exists */}
+      {adAvailable && (
         <section className="brand-ad-section page-container" aria-label="Synapse Labs brand film">
           <div className="section-heading">
             <div>
@@ -2103,7 +2228,7 @@ export default function SynapseStorefront({
               muted
               playsInline
               preload="metadata"
-              poster="/images/synapse/hero-synapse.svg"
+              poster="/images/synapse/hero-synapse.webp"
               className="brand-ad-video"
               aria-label="Synapse Labs 11-second brand film (16:9 landscape)"
             >
@@ -2131,16 +2256,64 @@ export default function SynapseStorefront({
         </a>
       </section>
 
-      <footer className="site-footer">
-        <div className="page-container footer-inner">
-          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <SynapseLogo size={24} showWordmark={true} />
-          </Link>
-          <span>Considered technology for everyday life.</span>
-          <Link href="/brand">Brand &amp; Design</Link>
-          <Link href="/support">Support &amp; FAQ</Link>
-          <a href="#devices">Devices <ChevronRight size={14} aria-hidden="true" /></a>
-          <small>© {new Date().getFullYear()} Synapse Labs</small>
+      <footer className="site-footer" role="contentinfo">
+        <div className="page-container footer-grid">
+          <div className="footer-col footer-col--brand">
+            <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
+              <SynapseLogo size={28} showWordmark={true} />
+            </Link>
+            <p className="footer-brand-mission">
+              Tactile neuro-wearables and ambient sensory instruments engineered for screen-free focus, sub-millimeter biometric precision, and complete data sovereignty.
+            </p>
+            <div className="footer-brand-tagline">
+              <span className="footer-tagline-dot" />
+              <span>Engineered in Zirconia Ceramics &amp; Titanium</span>
+            </div>
+          </div>
+
+          <div className="footer-col">
+            <span className="footer-col-title">Collection</span>
+            <ul className="footer-links-list">
+              <li><a href="/#devices">Synapse Core Ring (SC-01)</a></li>
+              <li><a href="/#devices">Aura Spatial Clip (AC-02)</a></li>
+              <li><a href="/#devices">NeuroDock Magnetic Slate (ND-03)</a></li>
+              <li><a href="/#telemetry">PPG Telemetry Lab</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <span className="footer-col-title">Philosophy</span>
+            <ul className="footer-links-list">
+              <li><a href="/#philosophy">Our Philosophy</a></li>
+              <li><a href="/#philosophy">Who We Build For</a></li>
+              <li><Link href="/brand">Design Story &amp; Materiality</Link></li>
+              <li><Link href="/privacy">Biometric Sovereignty</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <span className="footer-col-title">Support &amp; Concierge</span>
+            <ul className="footer-links-list">
+              <li><Link href="/support#sizing">Ring Sizing Guide</Link></li>
+              <li><Link href="/support#shipping">Insured Global Dispatch</Link></li>
+              <li><Link href="/support#returns">30-Day Tactile Guarantee</Link></li>
+              <li><Link href="/support#warranty">2-Year Hardware Assurance</Link></li>
+              <li><Link href="/support#contact">Client Concierge</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="page-container footer-bottom-bar">
+          <div className="footer-copyright">
+            &copy; {new Date().getFullYear()} Synapse Labs Inc. All rights reserved.
+          </div>
+          <div className="footer-legal-links">
+            <Link href="/privacy">Privacy Policy</Link>
+            <span className="footer-divider-dot">&middot;</span>
+            <Link href="/support">Support &amp; Sizing</Link>
+            <span className="footer-divider-dot">&middot;</span>
+            <a href="mailto:concierge@synapselabs.com">concierge@synapselabs.com</a>
+          </div>
         </div>
       </footer>
 

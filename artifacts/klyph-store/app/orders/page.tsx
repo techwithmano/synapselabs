@@ -145,6 +145,21 @@ export default async function OrdersPage() {
           </div>
         )}
       </section>
+
+      <footer className="site-footer">
+        <div className="page-container footer-inner">
+          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
+            <span className="brand-mark" aria-hidden="true">S</span>
+            <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+          </Link>
+          <span>Considered technology for everyday life.</span>
+          <Link href="/#philosophy">Our Philosophy</Link>
+          <Link href="/support">Support &amp; Sizing</Link>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/#devices">Collection</Link>
+          <small>&copy; {new Date().getFullYear()} Synapse Labs</small>
+        </div>
+      </footer>
     </main>
   );
 }

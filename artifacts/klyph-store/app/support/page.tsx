@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SynapseLogo from '@/src/components/SynapseLogo';
+import SupportContactForm from '@/src/components/SupportContactForm';
 import {
   ArrowLeft,
-  Check,
   ChevronRight,
-  HelpCircle,
+  Fingerprint,
   Lock,
   Mail,
-  Package,
   Ruler,
   ShieldCheck,
   Truck,
@@ -16,18 +15,14 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Support, Sizing & Client Concierge — SYNAPSE LABS',
+  title: 'Hardware Support, Sizing & Client Concierge',
   description:
-    'Hardware sizing guide, insured global dispatch, 30-day tactile fit guarantee, 2-year warranty, and client concierge for Synapse Labs.',
+    'Hardware sizing calibration guide, insured global dispatch, 30-day tactile fit guarantee, 2-year warranty, and client concierge for Synapse Labs.',
 };
 
-/**
- * PLACEHOLDER SUPPORT EMAIL
- * Replace this constant with the production concierge/support inbox address.
- */
-const SUPPORT_EMAIL = 'support@synapselabs.invalid';
+const SUPPORT_EMAIL = 'concierge@synapselabs.com';
 
-// Sizing table computed with exact formulas:
+// Sizing table computed with standard biological finger sizing formulas:
 // diameter = 11.63 + 0.8128 * size
 // circumference = Math.PI * diameter
 const SIZING_DATA = [6, 7, 8, 9, 10, 11, 12, 13].map((size) => {
@@ -43,23 +38,23 @@ const SIZING_DATA = [6, 7, 8, 9, 10, 11, 12, 13].map((size) => {
 const FAQS = [
   {
     q: 'How long does the battery last on the Synapse Core Ring?',
-    a: 'The Synapse Core Ring delivers a continuous 7 days of active biometric telemetry on a single charge. Charging from 0% to 100% takes approximately 45 minutes on the NeuroDock Magnetic Slate.',
+    a: 'The Synapse Core Ring delivers 7 continuous days of active biometric telemetry on a single charge. Recharging from 0% to 100% takes approximately 45 minutes on the NeuroDock Magnetic Slate.',
   },
   {
     q: 'Can I wear the Core Ring while swimming or showering?',
-    a: 'Yes. The ring is precision sintered from zirconia ceramic and grade 5 titanium with 10 ATM (100 meters) water resistance, suitable for swimming, shallow diving, showering, and rigorous workouts.',
+    a: 'Yes. The ring is precision sintered from biocompatible zirconia ceramic and grade 5 titanium with 10 ATM (100 meters) water resistance, suitable for swimming, water sports, showering, and rigorous workouts.',
   },
   {
     q: 'Does Synapse hardware require a monthly subscription?',
-    a: 'No. Synapse Labs believes in sovereign hardware ownership. All telemetry processing, HRV analytics, sleep stage mapping, and software updates are included with your hardware with zero subscription fees.',
+    a: 'No. Synapse Labs believes in sovereign hardware ownership. All telemetry processing, HRV analytics, sleep stage mapping, and software updates are included with your hardware with zero recurring subscription fees.',
   },
   {
     q: 'How does the Aura Spatial Clip transmit sound?',
-    a: 'The Aura Spatial Clip utilizes dual-acoustic bone conduction resonators positioned against the auricle cartilage, delivering immersive spatial audio directly to the inner ear without blocking your ear canal or ambient awareness.',
+    a: 'The Aura Spatial Clip utilizes dual-acoustic bone conduction resonators positioned against the auricle cartilage, delivering spatial acoustic clarity directly to the inner ear without blocking your ear canal or ambient awareness.',
   },
   {
     q: 'What is your return policy if the ring does not fit?',
-    a: 'We offer a 30-Day Tactile Fit Guarantee. If your instrument does not fit comfortably, contact concierge within 30 days of delivery for a complimentary size exchange or a full refund with pre-paid return air dispatch.',
+    a: 'We offer a 30-Day Tactile Fit Guarantee. If your instrument does not fit comfortably, contact concierge within 30 days of delivery for a complimentary size exchange with pre-paid return air dispatch or a full refund.',
   },
 ];
 
@@ -77,13 +72,26 @@ export default function SupportPage() {
       </header>
 
       <main className="page-container support-main" id="main-content">
+        {/* Breadcrumb Navigation */}
+        <nav className="privacy-breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              <Link href="/">Home</Link>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRight size={13} />
+            </li>
+            <li aria-current="page">Support &amp; Concierge</li>
+          </ol>
+        </nav>
+
         {/* Support Hero */}
         <section className="support-hero">
           <span className="eyebrow">
             <span className="eyebrow-dot" />
-            SYNAPSE LABS // CLIENT CONCIERGE &amp; DOCUMENTATION
+            SYNAPSE LABS // CLIENT CONCIERGE &amp; SIZING
           </span>
-          <h1>Hardware Support &amp; Sizing.</h1>
+          <h1>Hardware Support &amp; Calibration.</h1>
           <p className="support-lead">
             Everything you need to calibrate, measure, and maintain your Synapse hardware instruments.
           </p>
@@ -118,6 +126,13 @@ export default function SupportPage() {
             <p>Manufacturing coverage, sensor integrity, and ceramic durability.</p>
             <span className="support-card-link">Warranty details <ChevronRight size={14} aria-hidden="true" /></span>
           </a>
+
+          <Link href="/privacy" className="support-nav-card support-nav-card--privacy">
+            <div className="support-card-icon"><Lock size={22} aria-hidden="true" /></div>
+            <h3>Biometric Privacy</h3>
+            <p>On-device telemetry processing and zero cloud health data harvesting.</p>
+            <span className="support-card-link">Read privacy policy <ChevronRight size={14} aria-hidden="true" /></span>
+          </Link>
         </div>
 
         {/* Sizing Guide Section */}
@@ -271,22 +286,26 @@ export default function SupportPage() {
           </div>
         </section>
 
-        {/* Contact Concierge Section */}
+        {/* Contact Concierge Section with Interactive Form */}
         <section className="support-section" id="contact">
           <div className="concierge-card">
             <div className="concierge-content">
               <span className="eyebrow">CLIENT CONCIERGE</span>
-              <h2>Need Personal Assistance?</h2>
+              <h2>Contact Our Hardware Specialists.</h2>
               <p>
-                Our hardware specialists are available to answer questions about sizing, orders, or technical integration.
+                Have a question about ring sizing, international courier dispatch, or telemetry specifications? Send our engineering concierge a message below.
               </p>
-              <div className="concierge-email-box">
-                <Mail size={18} aria-hidden="true" />
+
+              {/* Interactive Form Component */}
+              <SupportContactForm />
+
+              <div className="concierge-direct-row">
+                <span>Or email directly:</span>
                 <a href={`mailto:${SUPPORT_EMAIL}`} className="concierge-email-link">
-                  {SUPPORT_EMAIL}
+                  <Mail size={16} aria-hidden="true" /> {SUPPORT_EMAIL}
                 </a>
               </div>
-              <small className="concierge-hours">Inquiries answered within 12 hours · Sunday through Thursday</small>
+              <small className="concierge-hours">Inquiries answered within 12 hours &middot; Sunday through Thursday</small>
             </div>
           </div>
         </section>
@@ -299,9 +318,10 @@ export default function SupportPage() {
             <SynapseLogo size={24} showWordmark={true} />
           </Link>
           <span>Considered technology for everyday life.</span>
-          <Link href="/brand">Brand &amp; Design</Link>
-          <Link href="/support">Support &amp; FAQ</Link>
-          <Link href="/#devices">Devices</Link>
+          <Link href="/#philosophy">Our Philosophy</Link>
+          <Link href="/support">Support &amp; Sizing</Link>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/#devices">Collection</Link>
           <small>&copy; {new Date().getFullYear()} Synapse Labs</small>
         </div>
       </footer>

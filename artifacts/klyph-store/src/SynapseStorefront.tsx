@@ -1460,42 +1460,186 @@ export default function SynapseStorefront({
                 <div className="telemetry-stream">
                   <div className="telemetry-readouts">
                     <div className="readout-card">
-                      <span className="readout-label">PULSE CADENCE</span>
-                      <strong className="readout-value">68 <small>BPM</small></strong>
-                      <span className="readout-sub">RESTING CARDIOVASCULAR RATE</span>
+                      <div className="readout-header">
+                        <span className="readout-label">PULSE CADENCE</span>
+                        <span className="readout-badge readout-badge--pulse">
+                          <Activity size={11} className="badge-icon-pulse" aria-hidden="true" />
+                          <span>LIVE SENSOR</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">68 <small>BPM</small></strong>
+                        <span className="readout-status-chip">RESTING OPTIMAL</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">RESTING CARDIOVASCULAR RATE</span>
+                        <span className="readout-meta">R-R: 882ms · RHYTHM: REGULAR</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">HEART RATE VARIABILITY</span>
-                      <strong className="readout-value">72 <small>ms</small></strong>
-                      <span className="readout-sub">NEURAL READINESS: OPTIMAL</span>
+                      <div className="readout-header">
+                        <span className="readout-label">HEART RATE VARIABILITY</span>
+                        <span className="readout-badge readout-badge--readiness">
+                          <Zap size={11} aria-hidden="true" />
+                          <span>94% READINESS</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">72 <small>ms</small></strong>
+                        <span className="readout-status-chip readout-status-chip--high">ELEVATED RECOVERY</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">NEURAL READINESS: OPTIMAL</span>
+                        <span className="readout-meta">SDNN: 78ms · RMSSD: 64ms</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">BLOOD OXYGENATION</span>
-                      <strong className="readout-value">99.2 <small>%</small></strong>
-                      <span className="readout-sub">MULTI-SPECTRAL OPTICAL</span>
+                      <div className="readout-header">
+                        <span className="readout-label">BLOOD OXYGENATION</span>
+                        <span className="readout-badge readout-badge--optical">
+                          <Fingerprint size={11} aria-hidden="true" />
+                          <span>530 / 660nm</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">99.2 <small>%</small></strong>
+                        <span className="readout-status-chip">CALIBRATED SpO₂</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">MULTI-SPECTRAL OPTICAL</span>
+                        <span className="readout-meta">PERFUSION INDEX: 4.8% · EXCELLENT</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="telemetry-waveform-wrap">
-                    <svg className="telemetry-svg" viewBox="0 0 800 160" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
-                          <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        className="telemetry-wave-fill"
-                        d="M0,100 Q40,100 60,95 T100,90 T140,85 T160,30 T170,140 T180,85 T220,95 T260,100 T300,100 Q340,100 360,95 T400,90 T440,85 T460,30 T470,140 T480,85 T520,95 T560,100 T600,100 Q640,100 660,95 T700,90 T740,85 T760,30 T770,140 T780,85 T800,100 L800,160 L0,160 Z"
-                        fill="url(#waveGrad)"
-                      />
-                      <path
-                        className="telemetry-wave-line"
-                        d="M0,100 Q40,100 60,95 T100,90 T140,85 T160,30 T170,140 T180,85 T220,95 T260,100 T300,100 Q340,100 360,95 T400,90 T440,85 T460,30 T470,140 T480,85 T520,95 T560,100 T600,100 Q640,100 660,95 T700,90 T740,85 T760,30 T770,140 T780,85 T800,100"
-                        fill="none"
-                        stroke="#2563EB"
-                        strokeWidth="2.5"
-                      />
-                    </svg>
+
+                  <div className="telemetry-waveform-wrap" role="region" aria-label="Optical PPG Waveform Display">
+                    {/* Header bar overlay */}
+                    <div className="waveform-overlay-header">
+                      <div className="waveform-channel-tag">
+                        <span className="channel-indicator-dot" aria-hidden="true" />
+                        <span className="channel-title">CHANNEL 01 // SUB-EPIDERMAL GREEN PPG (530nm)</span>
+                      </div>
+                      <div className="waveform-metrics-strip">
+                        <span>SWEEP: 25mm/s</span>
+                        <span className="waveform-sep">·</span>
+                        <span>GAIN: 10mm/mV</span>
+                        <span className="waveform-sep">·</span>
+                        <span>BW: 0.5–5.0Hz</span>
+                        <span className="waveform-sep">·</span>
+                        <span className="snr-badge">SNR: 46dB</span>
+                      </div>
+                    </div>
+
+                    {/* High-Precision SVG Waveform */}
+                    <div className="waveform-stage">
+                      <svg className="telemetry-svg" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true">
+                        <defs>
+                          {/* Precision Grid Pattern */}
+                          <pattern id="ppgGridPattern" width="40" height="20" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="20" x2="40" y2="20" stroke="rgba(15, 23, 42, 0.05)" strokeWidth="1" strokeDasharray="2 3" />
+                            <line x1="40" y1="0" x2="40" y2="20" stroke="rgba(15, 23, 42, 0.05)" strokeWidth="1" strokeDasharray="2 3" />
+                          </pattern>
+                          {/* Luminous Waveform Gradient Fill */}
+                          <linearGradient id="ppgWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.22" />
+                            <stop offset="40%" stopColor="#3B82F6" stopOpacity="0.10" />
+                            <stop offset="85%" stopColor="#60A5FA" stopOpacity="0.02" />
+                            <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                          </linearGradient>
+                          {/* Glow Filter */}
+                          <filter id="ppgGlow" x="-10%" y="-20%" width="120%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                          </filter>
+                        </defs>
+
+                        {/* Background Grid */}
+                        <rect width="1000" height="200" fill="url(#ppgGridPattern)" />
+
+                        {/* Voltage Reference Lines */}
+                        <line x1="0" y1="45" x2="1000" y2="45" stroke="rgba(37, 99, 235, 0.12)" strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1="0" y1="145" x2="1000" y2="145" stroke="rgba(15, 23, 42, 0.10)" strokeWidth="1" />
+
+                        {/* Reference Axis Labels */}
+                        <text x="12" y="42" className="ppg-axis-label">+1.8V SYSTOLIC PEAK</text>
+                        <text x="12" y="141" className="ppg-axis-label">0.0V DC BASELINE</text>
+                        <text x="940" y="190" className="ppg-axis-label">t (sec)</text>
+
+                        {/* Area Fill */}
+                        <path
+                          className="ppg-wave-fill"
+                          d="M 0,145 L 18,145 C 32,145 44,75 55,45 C 68,45 82,88 96,105 C 104,103 112,86 122,86 C 140,88 158,145 180,145 L 200,145 L 218,145 C 232,145 244,75 255,45 C 268,45 282,88 296,105 C 304,103 312,86 322,86 C 340,88 358,145 380,145 L 400,145 L 418,145 C 432,145 444,75 455,45 C 468,45 482,88 496,105 C 504,103 512,86 522,86 C 540,88 558,145 580,145 L 600,145 L 618,145 C 632,145 644,75 655,45 C 668,45 682,88 696,105 C 704,103 712,86 722,86 C 740,88 758,145 780,145 L 800,145 L 818,145 C 832,145 844,75 855,45 C 868,45 882,88 896,105 C 904,103 912,86 922,86 C 940,88 958,145 980,145 L 1000,145 L 1000,200 L 0,200 Z"
+                          fill="url(#ppgWaveGrad)"
+                        />
+
+                        {/* Ambient Glow Stroke */}
+                        <path
+                          className="ppg-wave-glow"
+                          d="M 0,145 L 18,145 C 32,145 44,75 55,45 C 68,45 82,88 96,105 C 104,103 112,86 122,86 C 140,88 158,145 180,145 L 200,145 L 218,145 C 232,145 244,75 255,45 C 268,45 282,88 296,105 C 304,103 312,86 322,86 C 340,88 358,145 380,145 L 400,145 L 418,145 C 432,145 444,75 455,45 C 468,45 482,88 496,105 C 504,103 512,86 522,86 C 540,88 558,145 580,145 L 600,145 L 618,145 C 632,145 644,75 655,45 C 668,45 682,88 696,105 C 704,103 712,86 722,86 C 740,88 758,145 780,145 L 800,145 L 818,145 C 832,145 844,75 855,45 C 868,45 882,88 896,105 C 904,103 912,86 922,86 C 940,88 958,145 980,145 L 1000,145"
+                          fill="none"
+                          stroke="#60A5FA"
+                          strokeWidth="5"
+                          opacity="0.4"
+                          filter="url(#ppgGlow)"
+                        />
+
+                        {/* Crisp Primary Precision Stroke */}
+                        <path
+                          className="ppg-wave-primary"
+                          d="M 0,145 L 18,145 C 32,145 44,75 55,45 C 68,45 82,88 96,105 C 104,103 112,86 122,86 C 140,88 158,145 180,145 L 200,145 L 218,145 C 232,145 244,75 255,45 C 268,45 282,88 296,105 C 304,103 312,86 322,86 C 340,88 358,145 380,145 L 400,145 L 418,145 C 432,145 444,75 455,45 C 468,45 482,88 496,105 C 504,103 512,86 522,86 C 540,88 558,145 580,145 L 600,145 L 618,145 C 632,145 644,75 655,45 C 668,45 682,88 696,105 C 704,103 712,86 722,86 C 740,88 758,145 780,145 L 800,145 L 818,145 C 832,145 844,75 855,45 C 868,45 882,88 896,105 C 904,103 912,86 922,86 C 940,88 958,145 980,145 L 1000,145"
+                          fill="none"
+                          stroke="#2563EB"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Clinical Peak Annotations on the Central Wave Cycle */}
+                        {/* 1. Systolic Peak Marker at (455, 45) */}
+                        <g className="ppg-marker-group">
+                          <circle cx="455" cy="45" r="9" className="ppg-halo-pulse" />
+                          <circle cx="455" cy="45" r="4.5" fill="#2563EB" stroke="#FFFFFF" strokeWidth="2" />
+                          <line x1="455" y1="45" x2="455" y2="24" stroke="#2563EB" strokeWidth="1" strokeDasharray="2 2" />
+                          <rect x="375" y="10" width="160" height="17" rx="4" fill="#0F172A" />
+                          <text x="455" y="22" textAnchor="middle" className="ppg-marker-pill-text">SYSTOLIC PEAK (Ps) +1.8V</text>
+                        </g>
+
+                        {/* 2. Dicrotic Notch Marker at (496, 105) */}
+                        <g className="ppg-marker-group">
+                          <circle cx="496" cy="105" r="3.5" fill="#64748B" stroke="#FFFFFF" strokeWidth="1.5" />
+                          <line x1="496" y1="105" x2="496" y2="122" stroke="#64748B" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="496" y="133" textAnchor="middle" className="ppg-annotation-label">DICROTIC NOTCH (Nd)</text>
+                        </g>
+
+                        {/* 3. Diastolic Tidal Wave Marker at (522, 86) */}
+                        <g className="ppg-marker-group">
+                          <circle cx="522" cy="86" r="3.5" fill="#3B82F6" stroke="#FFFFFF" strokeWidth="1.5" />
+                          <line x1="522" y1="86" x2="522" y2="70" stroke="#3B82F6" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="522" y="65" textAnchor="middle" className="ppg-annotation-label">TIDAL WAVE (Pd)</text>
+                        </g>
+
+                        {/* Secondary Pulsing Node on other visible peaks */}
+                        <circle cx="255" cy="45" r="3.5" fill="#2563EB" opacity="0.6" />
+                        <circle cx="655" cy="45" r="3.5" fill="#2563EB" opacity="0.6" />
+                        <circle cx="855" cy="45" r="3.5" fill="#2563EB" opacity="0.6" />
+                      </svg>
+
+                      {/* Real-time Oscilloscope Sweep Line Animation */}
+                      <div className="ppg-scan-beam" aria-hidden="true" />
+                    </div>
+
+                    {/* Footer bar overlay */}
+                    <div className="waveform-overlay-footer">
+                      <div className="footer-metric-pill">
+                        <span className="dot-green" aria-hidden="true" />
+                        <span>PERFUSION INDEX (PI): 4.8% · ARTERIAL COMPLIANCE: OPTIMAL</span>
+                      </div>
+                      <div className="footer-metric-meta">
+                        <span>ZERO-LATENCY CONTINUOUS PULSE TELEMETRY // SYNAPSE SC–01</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1504,25 +1648,88 @@ export default function SynapseStorefront({
                 <div className="telemetry-stream">
                   <div className="telemetry-readouts">
                     <div className="readout-card">
-                      <span className="readout-label">FREQUENCY SPECTRUM</span>
-                      <strong className="readout-value">20Hz–40kHz</strong>
-                      <span className="readout-sub">HI-RES SPATIAL RESOLUTION</span>
+                      <div className="readout-header">
+                        <span className="readout-label">FREQUENCY SPECTRUM</span>
+                        <span className="readout-badge readout-badge--optical">
+                          <AudioLines size={11} aria-hidden="true" />
+                          <span>HI-RES</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">20Hz–40kHz</strong>
+                        <span className="readout-status-chip">FULL AUDITORY BAND</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">SPATIAL ACOUSTIC CONDUCTION</span>
+                        <span className="readout-meta">DUAL RESONATOR · ZERO OCCLUSION</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">CONDUCTION SPEED</span>
-                      <strong className="readout-value">1.2 <small>ms</small></strong>
-                      <span className="readout-sub">ULTRA-LOW LATENCY AUDIO</span>
+                      <div className="readout-header">
+                        <span className="readout-label">CONDUCTION SPEED</span>
+                        <span className="readout-badge readout-badge--pulse">
+                          <Zap size={11} aria-hidden="true" />
+                          <span>APT-X LOSSLESS</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">1.2 <small>ms</small></strong>
+                        <span className="readout-status-chip readout-status-chip--high">REAL-TIME SYNC</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">ULTRA-LOW LATENCY AUDIO</span>
+                        <span className="readout-meta">SUB-AUDIBLE JITTER · &lt;0.05% THD</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">BEAMFORMING ISOLATION</span>
-                      <strong className="readout-value">-38 <small>dB</small></strong>
-                      <span className="readout-sub">ACOUSTIC LEAKAGE: ZERO</span>
+                      <div className="readout-header">
+                        <span className="readout-label">BEAMFORMING ISOLATION</span>
+                        <span className="readout-badge readout-badge--readiness">
+                          <ShieldCheck size={11} aria-hidden="true" />
+                          <span>ACTIVE ANC</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">-38 <small>dB</small></strong>
+                        <span className="readout-status-chip">ZERO LEAKAGE</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">DUAL BEAMFORMING MEMS</span>
+                        <span className="readout-meta">WHISPER-GRADE AMBIENT VOICE</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="telemetry-bars-wrap">
-                    {[35, 62, 48, 88, 70, 95, 54, 80, 42, 68, 92, 75, 40, 85, 60, 90, 50, 78, 65, 82, 45, 72, 88, 60].map((height, i) => (
-                      <div className="eq-bar" key={i} style={{ height: `${height}%`, animationDelay: `${i * 0.05}s` }} />
-                    ))}
+
+                  <div className="telemetry-waveform-wrap" role="region" aria-label="Spatial Audio Frequency Spectrum">
+                    <div className="waveform-overlay-header">
+                      <div className="waveform-channel-tag">
+                        <span className="channel-indicator-dot" aria-hidden="true" />
+                        <span className="channel-title">CHANNEL 02 // DUAL-RESONATOR SPATIAL FIELD (24-BIT / 96kHz)</span>
+                      </div>
+                      <div className="waveform-metrics-strip">
+                        <span>EQ: 24 BANDS</span>
+                        <span className="waveform-sep">·</span>
+                        <span>DSP: FLOATING POINT</span>
+                        <span className="waveform-sep">·</span>
+                        <span className="snr-badge">DYNAMIC: 118dB</span>
+                      </div>
+                    </div>
+                    <div className="telemetry-bars-wrap">
+                      {[35, 62, 48, 88, 70, 95, 54, 80, 42, 68, 92, 75, 40, 85, 60, 90, 50, 78, 65, 82, 45, 72, 88, 60].map((height, i) => (
+                        <div className="eq-bar" key={i} style={{ height: `${height}%`, animationDelay: `${i * 0.05}s` }} />
+                      ))}
+                    </div>
+                    <div className="waveform-overlay-footer">
+                      <div className="footer-metric-pill">
+                        <span className="dot-green" aria-hidden="true" />
+                        <span>SPATIAL HEAD-TRACKING ACTIVE · BINAURAL FIELD CALIBRATED</span>
+                      </div>
+                      <div className="footer-metric-meta">
+                        <span>AURICLE BONE-CONDUCTION // SYNAPSE SC–02</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1531,42 +1738,116 @@ export default function SynapseStorefront({
                 <div className="telemetry-stream">
                   <div className="telemetry-readouts">
                     <div className="readout-card">
-                      <span className="readout-label">INDUCTIVE POWER</span>
-                      <strong className="readout-value">15.0 <small>W</small></strong>
-                      <span className="readout-sub">MAGNETIC RESONANCE COUPLING</span>
+                      <div className="readout-header">
+                        <span className="readout-label">INDUCTIVE POWER</span>
+                        <span className="readout-badge readout-badge--readiness">
+                          <BatteryCharging size={11} aria-hidden="true" />
+                          <span>Qi2 FAST</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">15.0 <small>W</small></strong>
+                        <span className="readout-status-chip readout-status-chip--high">FAST INDUCTIVE</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">MAGNETIC RESONANCE COUPLING</span>
+                        <span className="readout-meta">COUPLING FACTOR: 0.89 · ADAPTIVE</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">SURFACE THERMAL STATE</span>
-                      <strong className="readout-value">31.4 <small>°C</small></strong>
-                      <span className="readout-sub">PASSIVE LIQUID-CHAMBER COOLING</span>
+                      <div className="readout-header">
+                        <span className="readout-label">SURFACE THERMAL STATE</span>
+                        <span className="readout-badge readout-badge--pulse">
+                          <Layers size={11} aria-hidden="true" />
+                          <span>CHILLED</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">31.4 <small>°C</small></strong>
+                        <span className="readout-status-chip">OPTIMAL DISSIPATION</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">PASSIVE LIQUID-CHAMBER COOLING</span>
+                        <span className="readout-meta">THERMAL FLUX: 1.2 W/cm² · STEADY</span>
+                      </div>
                     </div>
+
                     <div className="readout-card">
-                      <span className="readout-label">CONVERSION EFFICIENCY</span>
-                      <strong className="readout-value">94.8 <small>%</small></strong>
-                      <span className="readout-sub">GaN FAST RESONANT INVERTER</span>
+                      <div className="readout-header">
+                        <span className="readout-label">CONVERSION EFFICIENCY</span>
+                        <span className="readout-badge readout-badge--optical">
+                          <Sparkles size={11} aria-hidden="true" />
+                          <span>GaN TECH</span>
+                        </span>
+                      </div>
+                      <div className="readout-body">
+                        <strong className="readout-value">94.8 <small>%</small></strong>
+                        <span className="readout-status-chip readout-status-chip--high">HIGH EFFICIENCY</span>
+                      </div>
+                      <div className="readout-footer">
+                        <span className="readout-sub">GaN FAST RESONANT INVERTER</span>
+                        <span className="readout-meta">SWITCHING FREQ: 110kHz · MINIMAL LOSS</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="telemetry-waveform-wrap">
-                    <svg className="telemetry-svg" viewBox="0 0 800 160" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="powerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        className="telemetry-wave-fill"
-                        d="M0,80 Q50,20 100,80 T200,80 T300,80 T400,80 T500,80 T600,80 T700,80 T800,80 L800,160 L0,160 Z"
-                        fill="url(#powerGrad)"
-                      />
-                      <path
-                        className="telemetry-wave-line"
-                        d="M0,80 Q50,20 100,80 T200,80 T300,80 T400,80 T500,80 T600,80 T700,80 T800,80"
-                        fill="none"
-                        stroke="#10B981"
-                        strokeWidth="2.5"
-                      />
-                    </svg>
+
+                  <div className="telemetry-waveform-wrap" role="region" aria-label="Inductive Power Resonance Waveform">
+                    <div className="waveform-overlay-header">
+                      <div className="waveform-channel-tag">
+                        <span className="channel-indicator-dot" aria-hidden="true" />
+                        <span className="channel-title">CHANNEL 03 // 15W RESONANT MAGNETIC FLUX (110kHz)</span>
+                      </div>
+                      <div className="waveform-metrics-strip">
+                        <span>FLUX: 15W</span>
+                        <span className="waveform-sep">·</span>
+                        <span>V_RMS: 18.2V</span>
+                        <span className="waveform-sep">·</span>
+                        <span className="snr-badge">EFF: 94.8%</span>
+                      </div>
+                    </div>
+                    <div className="waveform-stage">
+                      <svg className="telemetry-svg" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true">
+                        <defs>
+                          <pattern id="powerGridPattern" width="40" height="20" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="20" x2="40" y2="20" stroke="rgba(15, 23, 42, 0.05)" strokeWidth="1" strokeDasharray="2 3" />
+                            <line x1="40" y1="0" x2="40" y2="20" stroke="rgba(15, 23, 42, 0.05)" strokeWidth="1" strokeDasharray="2 3" />
+                          </pattern>
+                          <linearGradient id="powerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#10B981" stopOpacity="0.22" />
+                            <stop offset="50%" stopColor="#10B981" stopOpacity="0.08" />
+                            <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="1000" height="200" fill="url(#powerGridPattern)" />
+                        <line x1="0" y1="100" x2="1000" y2="100" stroke="rgba(15, 23, 42, 0.10)" strokeWidth="1" />
+                        <text x="12" y="32" className="ppg-axis-label">+18.2V PEAK FLUX</text>
+                        <text x="12" y="96" className="ppg-axis-label">0.0V CENTER REFERENCE</text>
+                        <path
+                          className="telemetry-wave-fill"
+                          d="M0,100 Q62.5,30 125,100 T250,100 T375,100 T500,100 T625,100 T750,100 T875,100 T1000,100 L1000,200 L0,200 Z"
+                          fill="url(#powerGrad)"
+                        />
+                        <path
+                          className="telemetry-wave-line"
+                          d="M0,100 Q62.5,30 125,100 T250,100 T375,100 T500,100 T625,100 T750,100 T875,100 T1000,100"
+                          fill="none"
+                          stroke="#10B981"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="ppg-scan-beam" aria-hidden="true" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.22) 95%, #10B981 100%)' }} />
+                    </div>
+                    <div className="waveform-overlay-footer">
+                      <div className="footer-metric-pill">
+                        <span className="dot-green" aria-hidden="true" />
+                        <span>FOREIGN OBJECT DETECTION ACTIVE · THERMAL REGULATION: STABLE</span>
+                      </div>
+                      <div className="footer-metric-meta">
+                        <span>MAGNETIC RESONANCE CHARGING // SYNAPSE SC–03</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

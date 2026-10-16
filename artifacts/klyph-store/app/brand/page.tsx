@@ -102,14 +102,20 @@ export default function BrandPage() {
   ];
 
   const typeScale = [
-    { level: 'Display 1', size: '48px / 3.0rem', weight: '800', tracking: '-0.035em', role: 'Flagship Hero Headline' },
-    { level: 'Heading 2', size: '32px / 2.0rem', weight: '700', tracking: '-0.025em', role: 'Major Section Headers' },
-    { level: 'Heading 3', size: '22px / 1.375rem', weight: '700', tracking: '-0.02em', role: 'Product Card Titles & Pillars' },
-    { level: 'Subhead', size: '18px / 1.125rem', weight: '600', tracking: '-0.015em', role: 'Feature Leads & Drawer Headers' },
-    { level: 'Body Base', size: '15px / 0.9375rem', weight: '400 / 500', tracking: '-0.01em', role: 'Editorial Paragraphs & Descriptions' },
-    { level: 'Body Small', size: '14px / 0.875rem', weight: '400 / 500', tracking: '0em', role: 'Card Details & Spec Items' },
-    { level: 'Caption', size: '13px / 0.8125rem', weight: '500 / 600', tracking: '+0.01em', role: 'Metadata Timestamps & Helpers' },
-    { level: 'Micro', size: '11px / 0.6875rem', weight: '700', tracking: '+0.08em', role: 'Eyebrows & Telemetry Labels' },
+    { level: 'Display 1', size: '38px–62px / clamp', weight: '600 / 700', tracking: '-0.035em', role: 'Flagship Hero Headline (Space Grotesk)' },
+    { level: 'Heading 2', size: '28px–34px / clamp', weight: '600 / 700', tracking: '-0.025em', role: 'Major Section Headers (Space Grotesk)' },
+    { level: 'Heading 3', size: '20px–22px / 1.25rem', weight: '600 / 700', tracking: '-0.02em', role: 'Product Card Titles & Pillars (Space Grotesk)' },
+    { level: 'Subhead', size: '18px / 1.125rem', weight: '600', tracking: '-0.015em', role: 'Feature Leads & Drawer Headers (Space Grotesk)' },
+    { level: 'Body Base', size: '15px / 0.9375rem', weight: '400 / 500', tracking: '-0.01em', role: 'Editorial Paragraphs & Descriptions (Inter)' },
+    { level: 'Body Small', size: '14px / 0.875rem', weight: '400 / 500', tracking: '0em', role: 'Card Details & Spec Items (Inter)' },
+    { level: 'Caption', size: '13px / 0.8125rem', weight: '500 / 600', tracking: '+0.01em', role: 'Metadata Timestamps & Helpers (Inter)' },
+    { level: 'Micro', size: '12px / 0.75rem', weight: '700', tracking: '+0.12em', role: 'Eyebrows & Telemetry Labels (Strict >= 12px)' },
+  ];
+
+  const radiusTokens = [
+    { name: 'Radius Small', token: '--radius-sm', value: '8px', role: 'Pills, category chips, status badges, inputs' },
+    { name: 'Radius Medium', token: '--radius-md', value: '16px', role: 'Product cards, technology pillars, readout cards, toolbars' },
+    { name: 'Radius Large', token: '--radius-lg', value: '24px', role: 'Spec modal dialog, cart drawer, hero 3D stage' },
   ];
 
   const journeySteps = [
@@ -382,7 +388,7 @@ export default function BrandPage() {
               <span className="eyebrow">05 / TYPOGRAPHY ARCHITECTURE</span>
               <h2>Type Pairing &amp; Modular Scale.</h2>
             </div>
-            <p>Inter Display (headings) paired with Inter (instrumentation copy) on a 1.250 Major Third scale.</p>
+            <p>Space Grotesk (display and headings) paired with Inter (technical &amp; body copy) and system monospace, with strict 12px minimum type size.</p>
           </div>
 
           <div className="type-table-card">
@@ -399,6 +405,36 @@ export default function BrandPage() {
                   <span>{t.size}</span>
                   <code>weight {t.weight} · {t.tracking}</code>
                   <span className="type-role">{t.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 5B. Curvature & Radius System */}
+        <section className="brand-section">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">05B / CURVATURE &amp; RADIUS SYSTEM</span>
+              <h2>Standardized Radius Tokens.</h2>
+            </div>
+            <p>Uniform border radius rhythm preventing mismatched component curvature.</p>
+          </div>
+
+          <div className="type-table-card">
+            <div className="type-table-header">
+              <span>Token</span>
+              <span>CSS Variable</span>
+              <span>Value</span>
+              <span>Role / Applied Components</span>
+            </div>
+            <div className="type-table-body">
+              {radiusTokens.map((r, i) => (
+                <div className="type-table-row" key={i}>
+                  <strong>{r.name}</strong>
+                  <code>{r.token}</code>
+                  <span>{r.value}</span>
+                  <span className="type-role">{r.role}</span>
                 </div>
               ))}
             </div>

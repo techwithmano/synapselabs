@@ -14,10 +14,12 @@
                           0 14px 32px rgba(15, 23, 42, 0.055),
                           0 36px 72px rgba(15, 23, 42, 0.035);
 
-  /* Smooth easing */
-  --synapse-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --synapse-radius: 20px;
-  --synapse-radius-sm: 12px;
+  /* Radius tokens — Standardized Curvature System */
+  --radius-sm: 8px;   /* chips, pills, badges, inputs */
+  --radius-md: 16px;  /* cards, readouts, toolbars */
+  --radius-lg: 24px;  /* dialogs, modals, hero stages, drawers */
+  --synapse-radius: var(--radius-md);
+  --synapse-radius-sm: var(--radius-sm);
 
   /* Backward Compatibility Fallback Tokens */
   --synapse-ink: var(--synapse-obsidian);
@@ -177,7 +179,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .brand-words small {
   color: var(--synapse-steel);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .24em;
 }
@@ -242,7 +244,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   background: transparent;
   color: var(--synapse-steel);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .04em;
   padding: 6px 9px;
@@ -287,7 +289,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border-radius: 999px;
   background: var(--synapse-cobalt);
   color: #fff;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 }
@@ -301,7 +303,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   color: var(--synapse-obsidian);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -332,7 +334,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #ffffff;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.02em;
@@ -341,13 +343,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   max-width: 170px;
   overflow: hidden;
   color: var(--synapse-obsidian);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .orders-nav-button { width: auto; padding-inline: 11px; border-radius: 999px; }
-.action-label { font-size: 10px; font-weight: 600; }
+.action-label { font-size: 12px; font-weight: 600; }
 .mobile-menu-toggle {
   display: none;
 }
@@ -408,7 +410,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .mobile-nav-subhead {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--synapse-steel);
@@ -446,7 +448,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   overflow: hidden;
 }
 .mobile-user-details small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--synapse-steel);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -560,7 +562,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   gap: 8px;
   color: var(--synapse-cobalt);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .16em;
   line-height: 1.4;
@@ -630,14 +632,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .metadata-label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.12em;
   color: var(--synapse-steel);
   text-transform: uppercase;
 }
 .metadata-value {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-obsidian);
   letter-spacing: -0.01em;
@@ -682,7 +684,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   position: absolute;
   z-index: 6;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.14em;
   color: var(--synapse-steel);
@@ -769,7 +771,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .hero-caption-name span {
   font-family: ui-monospace, SFMono-Regular, monospace;
   color: var(--synapse-steel);
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .12em;
 }
@@ -807,7 +809,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 10px;
   color: #334155;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .benefit-strip-inner svg { color: var(--synapse-cobalt); }
@@ -890,7 +892,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .product-card__category {
   font-family: var(--font-mono, monospace), ui-monospace, SFMono-Regular, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
   color: #475569;
@@ -908,7 +910,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono, monospace), ui-monospace, SFMono-Regular, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: #1E293B;
@@ -965,7 +967,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
@@ -994,7 +996,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .product-index-label {
   font-family: ui-monospace, SFMono-Regular, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--synapse-steel);
@@ -1021,7 +1023,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .variant-label {
   font-family: var(--font-mono, monospace), ui-monospace, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-steel);
   letter-spacing: 0.1em;
@@ -1036,7 +1038,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border: 1px solid var(--synapse-line);
   background: #FFFFFF;
   color: #334155;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1066,7 +1068,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .price-label {
   font-family: ui-monospace, SFMono-Regular, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--synapse-steel);
@@ -1130,7 +1132,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   background: transparent;
   color: var(--synapse-blue);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 .product-grid-skeleton { pointer-events: none; }
@@ -1192,7 +1194,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-self: flex-end;
   margin-top: -26px;
   color: #94a3b8;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 .technology-card h3 {
@@ -1202,7 +1204,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .technology-card p {
   margin: 0;
   color: var(--synapse-muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.55;
 }
 .closing-section {
@@ -1221,16 +1223,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 26px;
 }
-.footer-inner > span { margin-right: auto; color: var(--synapse-muted); font-size: 10px; }
+.footer-inner > span { margin-right: auto; color: var(--synapse-muted); font-size: 12px; }
 .footer-inner > a:not(.brand-lockup) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: #475569;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
 }
-.footer-inner > small { color: #94a3b8; font-size: 9px; white-space: nowrap; }
+.footer-inner > small { color: #94a3b8; font-size: 12px; white-space: nowrap; }
 
 .cart-backdrop {
   position: fixed;
@@ -1259,7 +1261,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   padding: 18px 24px;
   border-bottom: 1px solid var(--synapse-line);
 }
-.cart-header .eyebrow { font-size: 9px; }
+.cart-header .eyebrow { font-size: 12px; }
 .cart-header h2 {
   margin: 7px 0 0;
   font: 600 20px/1.2 'Space Grotesk', Inter, sans-serif;
@@ -1287,7 +1289,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   margin: 5px 0 7px;
   font: 600 14px/1.3 'Space Grotesk', Inter, sans-serif;
 }
-.cart-line-details > strong { font-size: 11px; }
+.cart-line-details > strong { font-size: 12px; }
 .quantity-control {
   width: fit-content;
   display: flex;
@@ -1332,7 +1334,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   gap: 8px;
 }
 .empty-cart-action {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748B;
   background: transparent;
@@ -1379,7 +1381,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .cart-subtotal { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
 .cart-subtotal strong { white-space: nowrap; font-size: 15px; }
-.cart-checkout > p { margin: 8px 0 16px; color: var(--synapse-muted); font-size: 11px; }
+.cart-checkout > p { margin: 8px 0 16px; color: var(--synapse-muted); font-size: 12px; }
 .place-order-button { width: 100%; min-height: 48px; font-size: 13px; font-weight: 600; }
 .cart-currency-switch {
   display: flex;
@@ -1388,7 +1390,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   gap: 5px;
   margin-top: 14px;
   color: var(--synapse-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .cart-currency-switch button { padding: 6px 12px; min-height: 36px; }
 .checkout-error-banner {
@@ -1407,7 +1409,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .error-retry-btn {
   align-self: flex-start;
   padding: 6px 14px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #FFFFFF;
   background: #DC2626;
@@ -1442,7 +1444,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   margin: 18px 0 6px;
   font: 600 19px/1.2 'Space Grotesk', Inter, sans-serif;
 }
-.cart-empty p, .cart-success p { max-width: 260px; margin: 0 0 17px; color: var(--synapse-muted); font-size: 11px; line-height: 1.6; }
+.cart-empty p, .cart-success p { max-width: 260px; margin: 0 0 17px; color: var(--synapse-muted); font-size: 12px; line-height: 1.6; }
 .cart-success .text-button { margin-top: 4px; }
 
 .account-shell { background: var(--synapse-soft); }
@@ -1461,7 +1463,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 7px;
   color: #475569;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .back-link:hover { color: var(--synapse-blue); }
@@ -1508,7 +1510,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #fff;
   font: 700 26px 'Space Grotesk', sans-serif;
 }
-.auth-trust { display: inline-flex; align-items: center; gap: 8px; margin-top: 21px; color: #64748b; font-size: 10px; }
+.auth-trust { display: inline-flex; align-items: center; gap: 8px; margin-top: 21px; color: #64748b; font-size: 12px; }
 .auth-trust span { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
 .auth-card {
   padding: clamp(24px, 4vw, 38px);
@@ -1523,7 +1525,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   letter-spacing: -.035em;
 }
 .auth-form { display: grid; gap: 17px; }
-.form-field { min-width: 0; display: grid; gap: 8px; color: #334155; font-size: 11px; font-weight: 700; }
+.form-field { min-width: 0; display: grid; gap: 8px; color: #334155; font-size: 12px; font-weight: 700; }
 .form-field input {
   width: 100%;
   min-width: 0;
@@ -1560,11 +1562,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border-radius: 9px;
   background: #fef2f2;
   color: #991b1b;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 .auth-submit { width: 100%; margin-top: 2px; }
-.auth-switch { margin: 20px 0 0; color: var(--synapse-muted); font-size: 11px; text-align: center; }
+.auth-switch { margin: 20px 0 0; color: var(--synapse-muted); font-size: 12px; text-align: center; }
 .auth-switch a { color: var(--synapse-blue); font-weight: 700; }
 
 .orders-page { width: min(calc(100% - 64px), 900px); margin-inline: auto; padding-block: 65px 100px; }
@@ -1576,9 +1578,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .order-card { overflow: hidden; border: 1px solid var(--synapse-line); border-radius: 16px; background: #fff; }
 .order-card-head, .order-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; }
 .order-card-head { border-bottom: 1px solid #f1f5f9; }
-.order-label { color: var(--synapse-muted); font-size: 8px; font-weight: 700; letter-spacing: .13em; }
+.order-label { color: var(--synapse-muted); font-size: 12px; font-weight: 700; letter-spacing: .13em; }
 .order-card-head h2 { margin: 4px 0 0; font: 600 14px 'Space Grotesk', Inter, sans-serif; }
-.order-status { display: inline-flex; align-items: center; gap: 7px; color: #475569; font-size: 10px; font-weight: 600; text-transform: capitalize; }
+.order-status { display: inline-flex; align-items: center; gap: 7px; color: #475569; font-size: 12px; font-weight: 600; text-transform: capitalize; }
 .status-dot {
   width: 7px;
   height: 7px;
@@ -1596,14 +1598,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .order-line:last-child { border-bottom: 0; }
 .order-line img, .order-image-placeholder { width: 50px; height: 50px; flex: 0 0 auto; border-radius: 9px; background: var(--synapse-soft); object-fit: cover; }
 .order-line-name { min-width: 0; display: grid; gap: 5px; }
-.order-line-name strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.order-line-name span, .order-card-foot time { color: var(--synapse-muted); font-size: 10px; }
-.order-line-price { margin-left: auto; color: #334155; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.order-line-name strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.order-line-name span, .order-card-foot time { color: var(--synapse-muted); font-size: 12px; }
+.order-line-price { margin-left: auto; color: #334155; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .order-card-foot { border-top: 1px solid #f1f5f9; }
 .order-card-foot strong { font-size: 12px; }
 .orders-empty { display: flex; flex-direction: column; align-items: center; padding: 55px 24px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #fff; text-align: center; }
 .orders-empty h2 { margin: 15px 0 6px; font: 600 19px 'Space Grotesk', Inter, sans-serif; }
-.orders-empty p { margin: 0 0 18px; color: var(--synapse-muted); font-size: 11px; }
+.orders-empty p { margin: 0 0 18px; color: var(--synapse-muted); font-size: 12px; }
 .success-content {
   min-height: calc(100vh - 76px);
   display: grid;
@@ -1727,7 +1729,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--synapse-cobalt);
@@ -1742,7 +1744,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .telemetry-timestamp {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--synapse-steel);
   letter-spacing: 0.08em;
 }
@@ -1775,7 +1777,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .readout-label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--synapse-steel);
@@ -1787,7 +1789,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   padding: 2px 8px;
   border-radius: 999px;
   font-family: ui-monospace, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1804,8 +1806,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #059669;
 }
 .readout-badge--optical {
-  background: rgba(147, 51, 234, 0.08);
-  color: #7C3AED;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--synapse-cobalt);
 }
 .readout-body {
   display: flex;
@@ -1836,7 +1838,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   background: rgba(15, 23, 42, 0.04);
   color: var(--synapse-steel);
   font-family: ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -1853,14 +1855,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   margin-top: 4px;
 }
 .readout-sub {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-cobalt);
   letter-spacing: 0.01em;
 }
 .readout-meta {
   font-family: ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-steel);
   opacity: 0.9;
@@ -1896,7 +1898,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--synapse-obsidian);
@@ -1914,7 +1916,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 7px;
   font-family: ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-steel);
 }
@@ -1970,21 +1972,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .ppg-axis-label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   fill: #64748B;
   letter-spacing: 0.06em;
 }
 .ppg-marker-pill-text {
   font-family: ui-monospace, monospace;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   fill: #ffffff;
   letter-spacing: 0.06em;
 }
 .ppg-annotation-label {
   font-family: ui-monospace, monospace;
-  font-size: 7.5px;
+  font-size: 12px;
   font-weight: 700;
   fill: #475569;
   letter-spacing: 0.05em;
@@ -2006,7 +2008,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   display: inline-flex;
   align-items: center;
   font-family: ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-obsidian);
   letter-spacing: 0.04em;
@@ -2021,7 +2023,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .footer-metric-meta {
   font-family: ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-steel);
   letter-spacing: 0.06em;
@@ -2131,7 +2133,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--synapse-line);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-steel);
   letter-spacing: 0.12em;
@@ -2152,12 +2154,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .spec-modal__meta-strip span {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 8.5px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   color: var(--synapse-steel);
 }
 .spec-modal__meta-strip strong {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-obsidian);
   letter-spacing: 0.05em;
@@ -2199,7 +2201,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   align-items: center;
   gap: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-steel);
   letter-spacing: 0.08em;
@@ -2209,7 +2211,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: var(--synapse-cobalt);
 }
 .spec-val {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-obsidian);
   line-height: 1.4;
@@ -2219,7 +2221,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .spec-features-title {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--synapse-steel);
   letter-spacing: 0.12em;
@@ -2320,14 +2322,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #ffffff;
 }
 .toast-content small {
-  font-size: 10.5px;
+  font-size: 12px;
   color: #94a3b8;
 }
 .toast-action {
   border: 0;
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   padding: 5px 12px;
   border-radius: 999px;
@@ -2399,8 +2401,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .site-header-inner { width: 100%; gap: 8px; }
   .brand-lockup { gap: 7px; }
   .brand-mark { width: 31px; height: 31px; border-radius: 10px; }
-  .brand-words strong { font-size: 10px; }
-  .brand-words small { font-size: 7px; }
+  .brand-words strong { font-size: 12px; }
+  .brand-words small { font-size: 12px; }
   .header-actions { gap: 6px; }
   .icon-button { width: 36px; height: 36px; border-radius: 11px; }
   .signin-link { width: 36px; height: 36px; justify-content: center; padding: 0; border: 1px solid var(--synapse-line); }
@@ -2413,21 +2415,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .hero-product-visual { border-radius: 17px; }
   .hero-visual-caption { min-height: 66px; gap: 9px; padding: 10px 12px; }
   .hero-caption-icon { width: 33px; height: 33px; }
-  .hero-caption-name strong { font-size: 10px; }
-  .hero-caption-price { font-size: 9px; }
+  .hero-caption-name strong { font-size: 12px; }
+  .hero-caption-price { font-size: 12px; }
   .benefit-strip-inner { width: calc(100% - 36px); justify-content: center; gap: 12px 17px; padding-block: 17px; flex-wrap: wrap; }
-  .benefit-strip-inner > div { gap: 7px; font-size: 9px; }
+  .benefit-strip-inner > div { gap: 7px; font-size: 12px; }
   .benefit-divider { display: none; }
   .devices-section { padding-block: 64px 66px; }
   .section-heading { display: block; margin-bottom: 23px; }
-  .section-heading > p { margin-top: 10px; font-size: 11px; }
+  .section-heading > p { margin-top: 10px; font-size: 12px; }
   .section-heading h2 { font-size: 30px; }
   .product-grid { grid-template-columns: 1fr; gap: 15px; }
   .product-card { display: grid; grid-template-columns: minmax(115px, .82fr) minmax(0, 1.18fr); }
   .product-card-image { height: 100%; min-height: 205px; aspect-ratio: auto; }
   .product-card-content { display: flex; flex-direction: column; justify-content: center; padding: 14px; }
   .product-card h3 { font-size: 16px; }
-  .product-card-content > p { min-height: 0; font-size: 10px; }
+  .product-card-content > p { min-height: 0; font-size: 12px; }
   .product-card-footer { align-items: flex-start; flex-direction: column; margin-top: 12px; padding-top: 11px; }
   .technology-inner { padding-block: 66px; }
   .technology-heading h2 { font-size: 37px; }
@@ -2444,7 +2446,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .footer-inner > a:not(.brand-lockup) { justify-self: end; }
   .footer-inner > small { grid-column: 1 / -1; }
   .account-topbar { min-height: 68px; padding-inline: 18px; }
-  .account-topbar .back-link { font-size: 10px; }
+  .account-topbar .back-link { font-size: 12px; }
   .orders-page { width: calc(100% - 36px); padding-block: 45px 70px; }
   .orders-title-row h1 { font-size: 34px; }
   .order-card-head, .order-card-foot { padding-inline: 14px; }
@@ -2501,7 +2503,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
     box-sizing: border-box;
   }
   .hero-stage__label--bottom { display: none; }
-  .hero-stage__label--top { left: 12px; font-size: 8px; }
+  .hero-stage__label--top { left: 12px; font-size: 12px; }
   .catalog-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -2518,7 +2520,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .filter-chip {
     min-height: 38px;
     padding: 0 12px;
-    font-size: 11.5px;
+    font-size: 12px;
   }
   .search-popover {
     position: fixed;
@@ -2531,15 +2533,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 
 @media (max-width: 390px) {
-  .brand-words strong { font-size: 9px; }
-  .brand-words small { font-size: 6px; }
+  .brand-words strong { font-size: 12px; }
+  .brand-words small { font-size: 12px; }
   .product-card { grid-template-columns: minmax(100px, .72fr) minmax(0, 1.28fr); }
   .product-card-content { padding: 12px 10px; }
   .product-card h3 { font-size: 15px; }
   .product-card-footer { gap: 10px; }
-  .add-button { min-height: 44px; padding-inline: 14px; font-size: 11px; }
+  .add-button { min-height: 44px; padding-inline: 14px; font-size: 12px; }
   .account-topbar { padding-inline: 14px; }
-  .account-topbar .back-link { gap: 6px; font-size: 11px; min-height: 44px; display: inline-flex; align-items: center; }
+  .account-topbar .back-link { gap: 6px; font-size: 12px; min-height: 44px; display: inline-flex; align-items: center; }
   .auth-layout { width: calc(100% - 20px); }
   .auth-card { padding: 21px 17px; }
   .cart-header { padding-inline: 14px; }
@@ -2605,7 +2607,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
     gap: 2px;
   }
   .mobile-sticky-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: #475569;
@@ -2774,7 +2776,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   text-overflow: ellipsis;
 }
 .search-result-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--synapse-steel);
 }
 .search-result-price {
@@ -2806,12 +2808,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .favorite-toggle-btn:hover {
-  color: #E11D48;
+  color: var(--synapse-cobalt);
   transform: scale(1.08);
 }
 .favorite-toggle-btn.is-active {
-  color: #E11D48;
-  border-color: rgba(225, 29, 72, 0.35);
+  color: var(--synapse-cobalt);
+  border-color: rgba(37, 99, 235, 0.35);
   animation: heartPulse 0.3s var(--synapse-ease);
 }
 @keyframes heartPulse {
@@ -2835,7 +2837,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border-radius: 999px;
   background: var(--synapse-cobalt);
   color: #FFFFFF;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -2945,7 +2947,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   cursor: pointer;
 }
 .favorites-remove-btn:hover {
-  color: #E11D48;
+  color: var(--synapse-cobalt);
 }
 .favorites-empty {
   display: flex;
@@ -3177,7 +3179,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -3258,7 +3260,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: var(--synapse-obsidian);
 }
 .brand-badge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   padding: 4px 10px;
@@ -3307,7 +3309,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   gap: 6px;
 }
 .summary-card-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--synapse-steel);
@@ -3398,7 +3400,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #FFFFFF;
 }
 .specimen-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   opacity: 0.7;
@@ -3454,7 +3456,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: var(--synapse-obsidian);
 }
 .color-badge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
@@ -3462,7 +3464,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   color: #059669;
 }
 .color-details code {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--synapse-steel);
 }
 .color-details p {
@@ -3495,7 +3497,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   padding: 14px 20px;
   background: var(--synapse-soft);
   border-bottom: 1px solid var(--synapse-line);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--synapse-steel);
@@ -3517,7 +3519,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   font-weight: 700;
 }
 .type-table-row code {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--synapse-steel);
 }
 .type-role {
@@ -3566,7 +3568,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   flex-grow: 1;
 }
 .journey-tech-badge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--synapse-steel);
   padding-top: 8px;
@@ -3717,5 +3719,214 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   UX REVIEW ADDITIONS: SIZING GUIDE, VARIANTS, MOBILE HEADER, TELEMETRY LAB
+   ========================================================================== */
+
+/* 1. Mobile Header < 640px: Only Logo, Cart, and Menu Button */
+@media (max-width: 639px) {
+  .header-actions .search-wrapper,
+  .header-actions .wishlist-button,
+  .header-actions .currency-switch,
+  .header-actions .signin-link,
+  .header-actions .nav-user-pill,
+  .header-actions .orders-nav-button,
+  .header-actions .logout-button {
+    display: none !important;
+  }
+}
+
+/* 2. Variant Badges in Cart & Favorites Drawers */
+.cart-line-variant,
+.favorites-item-variant {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--synapse-soft);
+  color: var(--synapse-steel);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 3. Currency Charge Notice in Cart Drawer */
+.cart-charge-notice {
+  margin: 10px 0 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  color: var(--synapse-cobalt);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 4. Variant Label Row & Size Guide Trigger */
+.variant-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.size-guide-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--synapse-cobalt);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.2s ease, text-decoration 0.2s ease;
+  min-height: 44px;
+}
+.size-guide-trigger:hover {
+  text-decoration: underline;
+}
+.size-guide-trigger:focus-visible {
+  outline: 2px solid var(--synapse-cobalt);
+  outline-offset: 2px;
+}
+
+/* 5. Size Guide Modal */
+.size-guide-modal {
+  position: relative;
+  width: min(92vw, 680px);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid var(--synapse-line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.16);
+  padding: clamp(24px, 5vw, 40px);
+}
+.size-guide-modal h2 {
+  font: 700 24px/1.2 'Space Grotesk', Inter, sans-serif;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+}
+.size-guide-instructions {
+  margin: 16px 0 24px;
+  color: var(--synapse-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.size-guide-instructions ol {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.size-guide-table-wrap {
+  overflow-x: auto;
+  margin: 20px 0;
+  border: 1px solid var(--synapse-line);
+  border-radius: var(--radius-md);
+}
+.size-guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.size-guide-table th {
+  background: var(--synapse-soft);
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--synapse-steel);
+  border-bottom: 1px solid var(--synapse-line);
+}
+.size-guide-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--synapse-line);
+  color: var(--synapse-ink);
+}
+.size-guide-table tr:last-child td {
+  border-bottom: none;
+}
+.size-guide-table tr:hover td {
+  background: rgba(37, 99, 235, 0.03);
+}
+
+/* 6. Hero 3D Drag Hint */
+.hero-stage__hint {
+  position: absolute;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--synapse-steel);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+/* 7. Telemetry Lab Simulated Demonstration Badge & CTA */
+.telemetry-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.simulated-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  color: var(--synapse-cobalt);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.telemetry-lab-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 36px;
+  text-align: center;
+}
+.telemetry-lab-cta p {
+  margin: 0;
+  color: var(--synapse-muted);
+  font-size: 14px;
+}
+
+/* 8. Spec Modal Variant Selection */
+.spec-modal-variants {
+  margin: 18px 0;
+  padding: 16px;
+  background: var(--synapse-soft);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--synapse-line);
+}
+
 
 

@@ -82,7 +82,7 @@ export default async function OrdersPage() {
                   </div>
                   <div className="order-status">
                     <span className={`status-dot status-${order.status}`} />
-                    {order.status}
+                    {order.status === 'pending' ? 'Payment not completed' : order.status}
                   </div>
                 </div>
                 <div className="order-items">
@@ -108,6 +108,19 @@ export default async function OrdersPage() {
                     );
                   })}
                 </div>
+                {order.status === 'pending' && (
+                  <div className="order-pending-notice" role="note">
+                    <span>Payment was not completed for this checkout session.</span>
+                    <div className="order-pending-links">
+                      <Link href="/cart" className="order-action-link">
+                        Return to cart &rarr;
+                      </Link>
+                      <Link href="/support" className="order-action-link">
+                        Need help? Sizing &amp; Support &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                )}
                 <div className="order-card-foot">
                   <time dateTime={new Date(order.createdAt).toISOString()}>
                     {new Date(order.createdAt).toLocaleDateString('en', {

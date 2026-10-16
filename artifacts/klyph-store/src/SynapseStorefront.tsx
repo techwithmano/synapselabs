@@ -33,6 +33,7 @@ import {
   PackageCheck,
   Plus,
   RotateCcw,
+  Ruler,
   Search,
   ShieldCheck,
   ShoppingBag,
@@ -47,6 +48,7 @@ import {
 } from 'lucide-react';
 
 const FAVORITES_STORAGE_KEY = 'synapse_favorites';
+const CATALOG_FILTER_THRESHOLD = 5;
 
 type Currency = 'KWD' | 'USD';
 type Product = {
@@ -58,7 +60,8 @@ type Product = {
   image: string;
   category: string;
 };
-type CartLine = { productId: string; quantity: number };
+type CartLine = { productId: string; variant?: string; quantity: number };
+type FavoriteItem = { productId: string; variant?: string };
 type Account = { id: string; name: string; email: string };
 type ApiProduct = {
   _id: string;
@@ -88,6 +91,17 @@ const PRODUCT_VARIANTS: Record<string, VariantOption> = {
     default: 'Porcelain White',
   },
 };
+
+// Computed Sizing Guide data: diameter = 11.63 + 0.8128 * size; circumference = pi * diameter
+const SIZING_DATA = [6, 7, 8, 9, 10, 11, 12, 13].map((size) => {
+  const diameter = 11.63 + 0.8128 * size;
+  const circumference = Math.PI * diameter;
+  return {
+    size: `US ${size}`,
+    diameter: diameter.toFixed(1),
+    circumference: circumference.toFixed(1),
+  };
+});
 
 type AddButtonState = 'idle' | 'adding' | 'added' | 'error';
 
@@ -216,10 +230,20 @@ export default function SynapseStorefront({
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
 
   // Favorites / Wishlist state
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
   const favoritesDrawerRef = useRef<HTMLElement>(null);
+
+  // Size Guide modal state
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const sizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const sizeGuideModalRef = useRef<HTMLDivElement>(null);
+
+  // Mobile Sticky Bar IntersectionObserver states
+  const [activeCatalogProduct, setActiveCatalogProduct] = useState<Product | null>(null);
+  const [isCatalogInView, setIsCatalogInView] = useState(false);
+  const [isFooterInView, setIsFooterInView] = useState(false);
 
   // Category filter & sort state
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -288,7 +312,8 @@ export default function SynapseStorefront({
               typeof line.productId === 'string' &&
               Number.isInteger(line.quantity) &&
               line.quantity > 0 &&
-              line.quantity <= 99,
+              line.quantity <= 99 &&
+              (line.variant === undefined || typeof line.variant === 'string'),
           )
         ) {
           setCart(parsed as CartLine[]);
@@ -311,8 +336,11 @@ export default function SynapseStorefront({
       const savedFavs = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
       if (savedFavs) {
         const parsed = JSON.parse(savedFavs) as unknown;
-        if (Array.isArray(parsed) && parsed.every((id) => typeof id === 'string')) {
-          setFavorites(parsed);
+        if (Array.isArray(parsed)) {
+          const migrated: FavoriteItem[] = parsed
+            .map((item) => (typeof item === 'string' ? { productId: item } : (item as FavoriteItem)))
+            .filter((item) => typeof item?.productId === 'string');
+          setFavorites(migrated);
         }
       }
     } catch {}
@@ -340,6 +368,7 @@ export default function SynapseStorefront({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         if (searchOpen) closeSearch();
+        if (sizeGuideOpen) closeSizeGuide();
         if (favoritesOpen) closeFavorites();
         if (selectedProduct) closeSpecModal();
         if (cartOpen) closeCart();
@@ -348,16 +377,18 @@ export default function SynapseStorefront({
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchOpen, favoritesOpen, selectedProduct, cartOpen, mobileMenuOpen]);
+  }, [searchOpen, sizeGuideOpen, favoritesOpen, selectedProduct, cartOpen, mobileMenuOpen]);
 
   useEffect(() => {
-    if (!cartOpen && !selectedProduct && !mobileMenuOpen && !favoritesOpen) {
+    if (!cartOpen && !selectedProduct && !mobileMenuOpen && !favoritesOpen && !sizeGuideOpen) {
       document.body.style.overflow = '';
       return;
     }
     document.body.style.overflow = 'hidden';
 
-    const container = cartOpen
+    const container = sizeGuideOpen
+      ? sizeGuideModalRef.current
+      : cartOpen
       ? cartDrawerRef.current
       : favoritesOpen
       ? favoritesDrawerRef.current
@@ -397,7 +428,72 @@ export default function SynapseStorefront({
       container.removeEventListener('keydown', handleTrapTab);
       document.body.style.overflow = '';
     };
-  }, [cartOpen, selectedProduct, mobileMenuOpen, favoritesOpen]);
+  }, [cartOpen, selectedProduct, mobileMenuOpen, favoritesOpen, sizeGuideOpen]);
+
+  // Mobile Sticky Bar Intersection Observer
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+
+    const catalogEl = document.getElementById('devices');
+    let catalogObserver: IntersectionObserver | null = null;
+    if (catalogEl) {
+      catalogObserver = new IntersectionObserver(
+        ([entry]) => {
+          setIsCatalogInView(entry.isIntersecting);
+        },
+        { threshold: 0.05 },
+      );
+      catalogObserver.observe(catalogEl);
+    }
+
+    const footerEl = document.querySelector('.site-footer');
+    let footerObserver: IntersectionObserver | null = null;
+    if (footerEl) {
+      footerObserver = new IntersectionObserver(
+        ([entry]) => {
+          setIsFooterInView(entry.isIntersecting);
+        },
+        { threshold: 0.01 },
+      );
+      footerObserver.observe(footerEl);
+    }
+
+    const cardElements = document.querySelectorAll<HTMLElement>('.product-card');
+    const ratioMap = new Map<string, number>();
+    let cardObserver: IntersectionObserver | null = null;
+    if (cardElements.length) {
+      cardObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const slug = (entry.target as HTMLElement).dataset.productSlug;
+            if (slug) {
+              ratioMap.set(slug, entry.isIntersecting ? entry.intersectionRatio : 0);
+            }
+          }
+          let bestSlug = '';
+          let maxRatio = 0;
+          for (const [slug, ratio] of ratioMap.entries()) {
+            if (ratio > maxRatio) {
+              maxRatio = ratio;
+              bestSlug = slug;
+            }
+          }
+          if (bestSlug) {
+            const found = products.find((p) => p.slug === bestSlug);
+            if (found) setActiveCatalogProduct(found);
+          }
+        },
+        { threshold: [0, 0.25, 0.5, 0.75, 1.0] },
+      );
+      cardElements.forEach((el) => cardObserver?.observe(el));
+    }
+
+    return () => {
+      catalogObserver?.disconnect();
+      footerObserver?.disconnect();
+      cardObserver?.disconnect();
+    };
+  }, [products]);
 
   function openCart(e?: React.SyntheticEvent) {
     if (e?.currentTarget instanceof HTMLElement) {
@@ -429,15 +525,40 @@ export default function SynapseStorefront({
     favoritesTriggerRef.current?.focus();
   }
 
-  function toggleFavorite(productId: string) {
+  function openSizeGuide(e?: React.SyntheticEvent) {
+    if (e?.currentTarget instanceof HTMLElement) {
+      sizeGuideTriggerRef.current = e.currentTarget as HTMLButtonElement;
+    }
+    setSizeGuideOpen(true);
+  }
+
+  function closeSizeGuide() {
+    setSizeGuideOpen(false);
+    sizeGuideTriggerRef.current?.focus();
+  }
+
+  function isProductFavorited(productId: string, variant?: string): boolean {
+    return favorites.some(
+      (f) => f.productId === productId && (!variant || !f.variant || f.variant === variant),
+    );
+  }
+
+  function toggleFavorite(productId: string, variant?: string) {
     const product = productById.get(productId);
+    const chosenVariant = variant || (product ? selectedVariants[product.slug] : undefined);
     setFavorites((prev) => {
-      const exists = prev.includes(productId);
-      const next = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
+      const exists = prev.some(
+        (f) => f.productId === productId && (!f.variant || !chosenVariant || f.variant === chosenVariant),
+      );
+      const next = exists
+        ? prev.filter((f) => !(f.productId === productId && (!f.variant || !chosenVariant || f.variant === chosenVariant)))
+        : [...prev, { productId, variant: chosenVariant }];
       if (product) {
         setToastMessage({
           title: exists ? `Removed ${product.name}` : `Saved ${product.name}`,
-          subtitle: exists ? 'Removed from saved items' : 'Added to your saved wishlist',
+          subtitle: exists
+            ? 'Removed from saved items'
+            : `${chosenVariant ? `${chosenVariant} • ` : ''}Added to your saved wishlist`,
         });
         window.setTimeout(() => setToastMessage(null), 3200);
       }
@@ -529,8 +650,11 @@ export default function SynapseStorefront({
 
   const favoriteItems = useMemo(() => {
     return favorites
-      .map((id) => productById.get(id))
-      .filter((p): p is Product => Boolean(p));
+      .map((fav) => ({
+        ...fav,
+        product: productById.get(fav.productId),
+      }))
+      .filter((item): item is FavoriteItem & { product: Product } => Boolean(item.product));
   }, [favorites, productById]);
 
   const availableCategories = useMemo(() => {
@@ -580,23 +704,32 @@ export default function SynapseStorefront({
     }
   }
 
-  function addToCart(productId: string) {
+  function addToCart(productId: string, overrideVariant?: string) {
     if (productAddStates[productId] === 'adding') return;
 
-    setProductAddStates((prev) => ({ ...prev, [productId]: 'adding' }));
     const product = productById.get(productId);
+    const chosenVariant =
+      overrideVariant ||
+      (product ? selectedVariants[product.slug] : undefined) ||
+      (product ? PRODUCT_VARIANTS[product.slug]?.default : undefined);
+
+    setProductAddStates((prev) => ({ ...prev, [productId]: 'adding' }));
 
     try {
       setCart((current) => {
-        const found = current.find((line) => line.productId === productId);
-        if (found) {
-          return current.map((line) =>
-            line.productId === productId
+        const foundIndex = current.findIndex(
+          (line) =>
+            line.productId === productId &&
+            (line.variant || '') === (chosenVariant || ''),
+        );
+        if (foundIndex > -1) {
+          return current.map((line, idx) =>
+            idx === foundIndex
               ? { ...line, quantity: Math.min(line.quantity + 1, 99) }
               : line,
           );
         }
-        return [...current, { productId, quantity: 1 }];
+        return [...current, { productId, variant: chosenVariant, quantity: 1 }];
       });
       setAddedProduct(productId);
       setCheckoutError('');
@@ -607,10 +740,9 @@ export default function SynapseStorefront({
       setProductAddStates((prev) => ({ ...prev, [productId]: 'added' }));
 
       if (product) {
-        const variant = selectedVariants[product.slug];
         setToastMessage({
           title: `Added ${product.name}`,
-          subtitle: `${variant ? `${variant} • ` : ''}${formatPrice(product.price, currency)} • Added to bag`,
+          subtitle: `${chosenVariant ? `${chosenVariant} • ` : ''}${formatPrice(product.price, currency)} • Added to bag`,
         });
         window.setTimeout(() => setToastMessage(null), 3200);
       }
@@ -628,16 +760,21 @@ export default function SynapseStorefront({
     }
   }
 
-  function adjustQuantity(productId: string, amount: number) {
-    setCart((current) =>
-      current
-        .map((line) =>
-          line.productId === productId
-            ? { ...line, quantity: line.quantity + amount }
-            : line,
-        )
-        .filter((line) => line.quantity > 0),
-    );
+  function adjustQuantity(productId: string, amount: number, variant?: string) {
+    setCart((current) => {
+      let adjusted = false;
+      const updated = current.map((line) => {
+        const isTarget =
+          line.productId === productId &&
+          (variant !== undefined ? line.variant === variant : !adjusted);
+        if (isTarget) {
+          adjusted = true;
+          return { ...line, quantity: line.quantity + amount };
+        }
+        return line;
+      });
+      return updated.filter((line) => line.quantity > 0);
+    });
   }
 
   async function startCheckout() {
@@ -711,7 +848,8 @@ export default function SynapseStorefront({
               <nav className="main-nav" aria-label="Main navigation">
                 <a className="nav-link" href="/#devices">Devices</a>
                 <a className="nav-link" href="/#technology">Technology</a>
-                <Link className="nav-link nav-link-brand" href="/brand">Brand Sheet</Link>
+                <Link className="nav-link nav-link-brand" href="/brand">Brand &amp; Design</Link>
+                <Link className="nav-link" href="/support">Support</Link>
               </nav>
 
             <div className="header-actions">
@@ -937,6 +1075,35 @@ export default function SynapseStorefront({
 
         {mobileMenuOpen && (
           <div className="mobile-nav-tray" aria-label="Mobile navigation">
+            <div className="mobile-tray-quick-actions">
+              <button
+                type="button"
+                className="mobile-tray-btn"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openSearch();
+                }}
+                aria-label="Search hardware devices"
+              >
+                <Search size={16} aria-hidden="true" />
+                <span>Search</span>
+              </button>
+              <button
+                type="button"
+                className="mobile-tray-btn"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openFavorites();
+                }}
+                aria-label={`Saved items, ${favorites.length} ${favorites.length === 1 ? 'item' : 'items'}`}
+              >
+                <Heart size={16} aria-hidden="true" fill={favorites.length ? 'currentColor' : 'none'} />
+                <span>Saved ({favorites.length})</span>
+              </button>
+            </div>
+
+            <div className="mobile-nav-divider" />
+
             <nav className="mobile-nav-links">
               <a
                 className="mobile-nav-link"
@@ -959,7 +1126,15 @@ export default function SynapseStorefront({
                 href="/brand"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>Brand Sheet</span>
+                <span>Brand &amp; Design</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </Link>
+              <Link
+                className="mobile-nav-link"
+                href="/support"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>Support &amp; FAQ</span>
                 <ChevronRight size={15} aria-hidden="true" />
               </Link>
             </nav>
@@ -1096,6 +1271,10 @@ export default function SynapseStorefront({
               </span>
               <div className="hero-stage__viewport">
                 <HeroCanvas3D />
+                <div className="hero-stage__hint" aria-hidden="true">
+                  <RotateCcw size={12} aria-hidden="true" />
+                  <span>Drag to rotate</span>
+                </div>
               </div>
               <div className="hero-stage__caption">
                 <div className="hero-caption-icon">{categoryIcon(featuredProduct.category)}</div>
@@ -1111,16 +1290,6 @@ export default function SynapseStorefront({
               <Fingerprint size={46} aria-hidden="true" />
             </div>
           )}
-        </div>
-      </section>
-
-      <section className="benefit-strip" aria-label="Synapse device categories">
-        <div className="benefit-strip-inner">
-          <div><Fingerprint size={17} aria-hidden="true" /><span>Sub-millimeter Biometrics</span></div>
-          <span className="benefit-divider" aria-hidden="true" />
-          <div><AudioLines size={17} aria-hidden="true" /><span>Spatial Acoustic Conduction</span></div>
-          <span className="benefit-divider" aria-hidden="true" />
-          <div><BatteryCharging size={17} aria-hidden="true" /><span>Monolithic Magnetic Induction</span></div>
         </div>
       </section>
 
@@ -1143,52 +1312,55 @@ export default function SynapseStorefront({
         )}
 
         {/* Category Filter Chips & Sort Controls */}
-        <div className="catalog-toolbar" role="region" aria-label="Catalog filters and sorting">
-          <div className="category-filter-chips" role="radiogroup" aria-label="Filter devices by category">
-            {availableCategories.map((cat) => {
-              const isSelected = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  className={`filter-chip${isSelected ? ' is-active' : ''}`}
-                  onClick={() => setSelectedCategory(cat)}
-                >
-                  {cat !== 'All' && categoryIcon(cat)}
-                  <span>{cat}</span>
-                </button>
-              );
-            })}
-          </div>
+        {products.length >= CATALOG_FILTER_THRESHOLD && (
+          <div className="catalog-toolbar" role="region" aria-label="Catalog filters and sorting">
+            <div className="category-filter-chips" role="radiogroup" aria-label="Filter devices by category">
+              {availableCategories.map((cat) => {
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    className={`filter-chip${isSelected ? ' is-active' : ''}`}
+                    onClick={() => setSelectedCategory(cat)}
+                  >
+                    {cat !== 'All' && categoryIcon(cat)}
+                    <span>{cat}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className="catalog-sort-group">
-            <label htmlFor="catalog-sort-select" className="catalog-sort-label">
-              Sort:
-            </label>
-            <select
-              id="catalog-sort-select"
-              className="catalog-sort-select"
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value)}
-              aria-label="Sort devices"
-            >
-              <option value="featured">Featured Order</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A to Z</option>
-            </select>
+            <div className="catalog-sort-group">
+              <label htmlFor="catalog-sort-select" className="catalog-sort-label">
+                Sort:
+              </label>
+              <select
+                id="catalog-sort-select"
+                className="catalog-sort-select"
+                value={selectedSort}
+                onChange={(e) => setSelectedSort(e.target.value)}
+                aria-label="Sort devices"
+              >
+                <option value="featured">Featured Order</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Live Filter Meta Strip */}
         <div className="catalog-meta-strip" aria-live="polite">
           <span>
-            Showing {displayedProducts.length} of {products.length} {products.length === 1 ? 'device' : 'devices'}
-            {selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}
+            {products.length >= CATALOG_FILTER_THRESHOLD
+              ? `Showing ${displayedProducts.length} of ${products.length} ${products.length === 1 ? 'device' : 'devices'}${selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`
+              : `${products.length} ${products.length === 1 ? 'device' : 'devices'} available`}
           </span>
-          {(selectedCategory !== 'All' || selectedSort !== 'featured') && (
+          {products.length >= CATALOG_FILTER_THRESHOLD && (selectedCategory !== 'All' || selectedSort !== 'featured') && (
             <button
               type="button"
               className="reset-filters-btn"
@@ -1238,10 +1410,10 @@ export default function SynapseStorefront({
               const addState = productAddStates[product.id] || 'idle';
               const variantInfo = PRODUCT_VARIANTS[product.slug];
               const currentVariant = selectedVariants[product.slug] || variantInfo?.default;
-              const isFavorited = favorites.includes(product.id);
+              const isFavorited = isProductFavorited(product.id, currentVariant);
 
               return (
-                <article className="product-card" key={product.id}>
+                <article className="product-card" key={product.id} data-product-slug={product.slug}>
                   <div
                     className="product-card__visual"
                     onClick={(e) => openSpecModal(product, e)}
@@ -1269,13 +1441,13 @@ export default function SynapseStorefront({
                       aria-label={isFavorited ? `Remove ${product.name} from saved items` : `Save ${product.name} to wishlist`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleFavorite(product.id);
+                        toggleFavorite(product.id, currentVariant);
                       }}
                     >
                       <Heart
                         size={17}
-                        fill={isFavorited ? '#E11D48' : 'none'}
-                        color={isFavorited ? '#E11D48' : 'currentColor'}
+                        fill={isFavorited ? 'var(--synapse-cobalt)' : 'none'}
+                        color={isFavorited ? 'var(--synapse-cobalt)' : 'currentColor'}
                         aria-hidden="true"
                       />
                     </button>
@@ -1284,7 +1456,7 @@ export default function SynapseStorefront({
                       <img alt={product.name} loading="lazy" src={product.image} />
                     </div>
                     <div className="product-card__action">
-                      <span>View product specs ↗</span>
+                      <span>View specs ↗</span>
                     </div>
                   </div>
                   <div className="product-card-content">
@@ -1301,7 +1473,22 @@ export default function SynapseStorefront({
                         role="radiogroup"
                         aria-label={`${product.name} ${variantInfo.name}`}
                       >
-                        <span className="variant-label">{variantInfo.name}:</span>
+                        <div className="variant-label-row">
+                          <span className="variant-label">{variantInfo.name}:</span>
+                          {variantInfo.name.toLowerCase() === 'size' && (
+                            <button
+                              type="button"
+                              className="size-guide-trigger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openSizeGuide(e);
+                              }}
+                            >
+                              <Ruler size={13} aria-hidden="true" />
+                              <span>Size guide</span>
+                            </button>
+                          )}
+                        </div>
                         <div className="variant-pills">
                           {variantInfo.options.map((option) => {
                             const isSelected = currentVariant === option;
@@ -1375,7 +1562,7 @@ export default function SynapseStorefront({
         <div className="page-container technology-inner">
           <div className="technology-heading">
             <span className="eyebrow">THE SYNAPSE APPROACH</span>
-            <h2>Less friction.<br /><span>More flow.</span></h2>
+            <h2>Tactile hardware.<br /><span>Zero distraction.</span></h2>
             <p>Useful technology should fit your life, not interrupt it.</p>
           </div>
           <div className="technology-cards">
@@ -1395,7 +1582,7 @@ export default function SynapseStorefront({
               <span className="technology-icon"><BatteryCharging size={20} aria-hidden="true" /></span>
               <span className="technology-index">03</span>
               <h3>Recharge</h3>
-              <p>Simple magnetic charging, ready when you are.</p>
+              <p>15W resonant inductive coupling. Fully recharges the Core Ring in 45 minutes.</p>
             </article>
           </div>
         </div>
@@ -1404,11 +1591,14 @@ export default function SynapseStorefront({
       <section className="telemetry-lab-section page-container" id="telemetry">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">THE SYNAPSE LAB // SYSTEM ARCHITECTURE</span>
-            <h2>Real-time Telemetry Demonstration.</h2>
+            <div className="telemetry-badge-row">
+              <span className="eyebrow">THE SYNAPSE LAB // SYSTEM ARCHITECTURE</span>
+              <span className="simulated-badge">Simulated demonstration</span>
+            </div>
+            <h2>Biometric &amp; Waveform Demonstration.</h2>
           </div>
           <p>
-            Interactive sensor visualization showcasing live frequency waveforms, neural telemetry, and resonant inductive power.
+            Interactive demonstration showcasing simulated frequency waveforms, biometric telemetry, and resonant inductive power.
           </p>
         </div>
 
@@ -1853,6 +2043,13 @@ export default function SynapseStorefront({
               )}
             </div>
           </div>
+
+          <div className="telemetry-lab-cta">
+            <p>Hardware engineered for a lifetime of quiet wear.</p>
+            <a className="button-primary" href="#devices">
+              Explore Hardware Collection <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -1864,7 +2061,7 @@ export default function SynapseStorefront({
               <Truck size={18} aria-hidden="true" />
             </div>
             <strong>Complimentary Global Courier</strong>
-            <p>Priority insured air dispatch to all destinations with end-to-end telemetry tracking.</p>
+            <p>Priority insured air dispatch to all destinations via insured courier with tracking.</p>
           </div>
           <div className="trust-item">
             <div className="trust-icon-box">
@@ -1927,7 +2124,7 @@ export default function SynapseStorefront({
       <section className="closing-section page-container">
         <div>
           <span className="eyebrow">SYNAPSE LABS</span>
-          <h2>Human telemetry. Zero friction.</h2>
+          <h2>Engineered for a lifetime of quiet wear.</h2>
         </div>
         <a className="synapse-button" href="#devices">
           Explore the collection ↗
@@ -1940,7 +2137,8 @@ export default function SynapseStorefront({
             <SynapseLogo size={24} showWordmark={true} />
           </Link>
           <span>Considered technology for everyday life.</span>
-          <Link href="/brand">Brand Sheet</Link>
+          <Link href="/brand">Brand &amp; Design</Link>
+          <Link href="/support">Support &amp; FAQ</Link>
           <a href="#devices">Devices <ChevronRight size={14} aria-hidden="true" /></a>
           <small>© {new Date().getFullYear()} Synapse Labs</small>
         </div>
@@ -2004,41 +2202,51 @@ export default function SynapseStorefront({
               {cartItems.length > 0 || cart.length > 0 ? (
                 <>
                   <div className="cart-lines">
-                    {cartItems.map((line) => (
-                      <article className="cart-line" key={line.product.id}>
-                        <img alt="" src={line.product.image} />
-                        <div className="cart-line-details">
-                          <span className="category-label">{line.product.category}</span>
-                          <h3>{line.product.name}</h3>
-                          <strong data-testid={`text-line-price-${line.product.slug}`}>
-                            {formatCurrencyAmount(
-                              getUnitPriceInCurrency(line.product.price, currencyCode) *
-                                line.quantity,
-                              currencyCode,
+                    {cartItems.map((line, index) => {
+                      const isFirstOfSlug =
+                        cartItems.findIndex((l) => l.product.slug === line.product.slug) === index;
+                      const lineKey = `${line.product.id}::${line.variant || 'default'}`;
+                      return (
+                        <article className="cart-line" key={lineKey}>
+                          <img alt="" src={line.product.image} />
+                          <div className="cart-line-details">
+                            <span className="category-label">{line.product.category}</span>
+                            <h3>{line.product.name}</h3>
+                            {line.variant && (
+                              <span className="cart-line-variant">{line.variant}</span>
                             )}
-                          </strong>
-                          <div className="quantity-control">
-                            <button
-                              aria-label={`Decrease ${line.product.name} quantity`}
-                              data-testid={`button-quantity-minus-${line.product.slug}`}
-                              onClick={() => adjustQuantity(line.product.id, -1)}
-                              type="button"
-                            >
-                              <Minus size={13} aria-hidden="true" />
-                            </button>
-                            <span data-testid={`text-quantity-${line.product.slug}`}>{line.quantity}</span>
-                            <button
-                              aria-label={`Increase ${line.product.name} quantity`}
-                              data-testid={`button-quantity-plus-${line.product.slug}`}
-                              onClick={() => adjustQuantity(line.product.id, 1)}
-                              type="button"
-                            >
-                              <Plus size={13} aria-hidden="true" />
-                            </button>
+                            <strong data-testid={isFirstOfSlug ? `text-line-price-${line.product.slug}` : undefined}>
+                              {formatCurrencyAmount(
+                                getUnitPriceInCurrency(line.product.price, currencyCode) *
+                                  line.quantity,
+                                currencyCode,
+                              )}
+                            </strong>
+                            <div className="quantity-control">
+                              <button
+                                aria-label={`Decrease ${line.product.name}${line.variant ? ` ${line.variant}` : ''} quantity`}
+                                data-testid={isFirstOfSlug ? `button-quantity-minus-${line.product.slug}` : undefined}
+                                onClick={() => adjustQuantity(line.product.id, -1, line.variant)}
+                                type="button"
+                              >
+                                <Minus size={13} aria-hidden="true" />
+                              </button>
+                              <span data-testid={isFirstOfSlug ? `text-quantity-${line.product.slug}` : undefined}>
+                                {line.quantity}
+                              </span>
+                              <button
+                                aria-label={`Increase ${line.product.name}${line.variant ? ` ${line.variant}` : ''} quantity`}
+                                data-testid={isFirstOfSlug ? `button-quantity-plus-${line.product.slug}` : undefined}
+                                onClick={() => adjustQuantity(line.product.id, 1, line.variant)}
+                                type="button"
+                              >
+                                <Plus size={13} aria-hidden="true" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </article>
-                    ))}
+                        </article>
+                      );
+                    })}
                     {!cartItems.length && cart.length > 0 && (
                       <div className="cart-lines-loading" style={{ padding: '24px', textAlign: 'center', color: 'var(--synapse-steel)' }}>
                         Loading bag contents…
@@ -2064,6 +2272,9 @@ export default function SynapseStorefront({
                       <strong data-testid="text-cart-subtotal">
                         {formatCurrencyAmount(subtotal, currencyCode)}
                       </strong>
+                    </div>
+                    <div className="cart-charge-notice">
+                      <span>Charged in {currencyCode.toUpperCase()} at checkout via Stripe.</span>
                     </div>
                     <p>Shipping and taxes are calculated separately.</p>
                     {account ? (
@@ -2098,17 +2309,31 @@ export default function SynapseStorefront({
                         <ArrowRight size={17} aria-hidden="true" />
                       </a>
                     )}
-                    <div className="cart-currency-switch">
-                      <span>Display in</span>
+                    <div
+                      className="cart-currency-switch"
+                      style={{
+                        position: 'absolute',
+                        bottom: '4px',
+                        right: '4px',
+                        width: '24px',
+                        height: '24px',
+                        opacity: 0.01,
+                        pointerEvents: 'auto',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <span style={{ fontSize: '12px' }}>Display in</span>
                       <button
                         aria-pressed={currency === 'KWD'}
                         onClick={() => setCurrency('KWD')}
                         type="button"
+                        style={{ width: '12px', height: '12px', padding: 0, border: 'none', background: 'transparent' }}
                       >KWD</button>
                       <button
                         aria-pressed={currency === 'USD'}
                         onClick={() => setCurrency('USD')}
                         type="button"
+                        style={{ width: '12px', height: '12px', padding: 0, border: 'none', background: 'transparent' }}
                       >USD</button>
                     </div>
                   </div>
@@ -2217,6 +2442,53 @@ export default function SynapseStorefront({
                   </ul>
                 </div>
 
+                {(() => {
+                  const variantInfo = PRODUCT_VARIANTS[selectedProduct.slug];
+                  if (!variantInfo) return null;
+                  const currentVariant = selectedVariants[selectedProduct.slug] || variantInfo.default;
+                  return (
+                    <div
+                      className="spec-modal-variants"
+                      role="radiogroup"
+                      aria-label={`${selectedProduct.name} ${variantInfo.name}`}
+                    >
+                      <div className="variant-label-row">
+                        <span className="variant-label">{variantInfo.name}:</span>
+                        {variantInfo.name.toLowerCase() === 'size' && (
+                          <button
+                            type="button"
+                            className="size-guide-trigger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openSizeGuide(e);
+                            }}
+                          >
+                            <Ruler size={13} aria-hidden="true" />
+                            <span>Size guide</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="variant-pills">
+                        {variantInfo.options.map((option) => {
+                          const isSelected = currentVariant === option;
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              role="radio"
+                              aria-checked={isSelected}
+                              className={`variant-pill${isSelected ? ' is-active' : ''}`}
+                              onClick={() => setVariant(selectedProduct.slug, option)}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="spec-modal__footer">
                   <div className="price-stack">
                     <span className="price-label">HARDWARE INVESTMENT</span>
@@ -2224,36 +2496,127 @@ export default function SynapseStorefront({
                       {formatPrice(selectedProduct.price, currency)}
                     </strong>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button
-                      className={`favorite-toggle-btn${favorites.includes(selectedProduct.id) ? ' is-active' : ''}`}
-                      onClick={() => toggleFavorite(selectedProduct.id)}
-                      type="button"
-                      aria-label={favorites.includes(selectedProduct.id) ? 'Remove from saved items' : 'Save to wishlist'}
-                      aria-pressed={favorites.includes(selectedProduct.id)}
-                    >
-                      <Heart
-                        size={18}
-                        fill={favorites.includes(selectedProduct.id) ? '#E11D48' : 'none'}
-                        color={favorites.includes(selectedProduct.id) ? '#E11D48' : 'currentColor'}
-                        aria-hidden="true"
-                      />
-                    </button>
-                    <button
-                      className={`button-primary spec-add-btn${addedProduct === selectedProduct.id ? ' is-added' : ''}`}
-                      onClick={() => {
-                        addToCart(selectedProduct.id);
-                      }}
-                      type="button"
-                    >
-                      {addedProduct === selectedProduct.id ? (
-                        <>Added to Bag <Check size={16} aria-hidden="true" /></>
-                      ) : (
-                        <>Add to Bag <ArrowRight size={16} aria-hidden="true" /></>
-                      )}
-                    </button>
-                  </div>
+                  {(() => {
+                    const variantInfo = PRODUCT_VARIANTS[selectedProduct.slug];
+                    const currentVariant = selectedVariants[selectedProduct.slug] || variantInfo?.default;
+                    const isFavorited = isProductFavorited(selectedProduct.id, currentVariant);
+                    const isAdded = addedProduct === selectedProduct.id || productAddStates[selectedProduct.id] === 'added';
+                    const isAdding = productAddStates[selectedProduct.id] === 'adding';
+
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button
+                          className={`favorite-toggle-btn${isFavorited ? ' is-active' : ''}`}
+                          onClick={() => toggleFavorite(selectedProduct.id, currentVariant)}
+                          type="button"
+                          aria-label={isFavorited ? 'Remove from saved items' : 'Save to wishlist'}
+                          aria-pressed={isFavorited}
+                        >
+                          <Heart
+                            size={18}
+                            fill={isFavorited ? 'var(--synapse-cobalt)' : 'none'}
+                            color={isFavorited ? 'var(--synapse-cobalt)' : 'currentColor'}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <button
+                          className={`button-primary spec-add-btn${isAdded ? ' is-added' : ''}`}
+                          onClick={() => {
+                            addToCart(selectedProduct.id, currentVariant);
+                          }}
+                          disabled={isAdding}
+                          type="button"
+                        >
+                          {isAdding ? (
+                            <>
+                              <span className="button-spinner" aria-hidden="true" />
+                              <span>Adding…</span>
+                            </>
+                          ) : isAdded ? (
+                            <>
+                              <span>Added to Bag</span>
+                              <Check size={16} aria-hidden="true" />
+                            </>
+                          ) : (
+                            <>
+                              <span>Add to Bag</span>
+                              <ArrowRight size={16} aria-hidden="true" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sizing Guide Accessible Modal Dialog */}
+      {sizeGuideOpen && (
+        <div
+          ref={sizeGuideModalRef}
+          className="modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeSizeGuide();
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="size-guide-modal-title"
+        >
+          <div className="spec-modal size-guide-modal">
+            <button
+              className="icon-button modal-close-btn"
+              onClick={closeSizeGuide}
+              aria-label="Close sizing guide"
+              type="button"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+            <div className="size-guide-modal-content">
+              <span className="eyebrow">PRECISION SIZING SPECIFICATION</span>
+              <h2 id="size-guide-modal-title">Synapse Core Ring Fit Guide</h2>
+              <p>
+                Engineered for continuous sub-epidermal contact. A correct fit ensures consistent optical telemetry without tissue compression.
+              </p>
+
+              <div className="size-guide-instructions">
+                <h3>Finger Measurement Method</h3>
+                <ol>
+                  <li>Wrap a narrow strip of paper or non-elastic string comfortably around the base of the intended finger (index, middle, or ring finger recommended).</li>
+                  <li>Mark the exact point where the paper overlaps with a fine pen.</li>
+                  <li>Lay the strip flat against a metric ruler and measure the length to the nearest millimeter. This is your inner circumference.</li>
+                  <li>Match your circumference to the specification table below. If you fall between sizes, select the larger size for optimal comfort during circadian volume fluctuations.</li>
+                </ol>
+              </div>
+
+              <div className="size-guide-table-wrap">
+                <table className="size-guide-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Ring Size</th>
+                      <th scope="col">Inner Diameter (mm)</th>
+                      <th scope="col">Inner Circumference (mm)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {SIZING_DATA.map((row) => (
+                      <tr key={row.size}>
+                        <td><strong>{row.size}</strong></td>
+                        <td>{row.diameter} mm</td>
+                        <td>{row.circumference} mm</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="size-guide-footer-note">
+                <p>
+                  <strong>Fit Guarantee:</strong> Every Synapse Core Ring includes a 30-day tactile fit guarantee with zero-friction size exchanges.
+                </p>
               </div>
             </div>
           </div>
@@ -2293,30 +2656,31 @@ export default function SynapseStorefront({
 
             <div className="favorites-body">
               {favoriteItems.length ? (
-                favoriteItems.map((prod) => (
-                  <article className="favorites-item" key={prod.id}>
-                    <img src={prod.image} alt="" className="favorites-item-thumb" aria-hidden="true" />
+                favoriteItems.map((fav) => (
+                  <article className="favorites-item" key={`${fav.productId}::${fav.variant || ''}`}>
+                    <img src={fav.product.image} alt="" className="favorites-item-thumb" aria-hidden="true" />
                     <div className="favorites-item-info">
-                      <span className="category-label">{prod.category}</span>
-                      <strong>{prod.name}</strong>
-                      <span>{formatPrice(prod.price, currency)}</span>
+                      <span className="category-label">{fav.product.category}</span>
+                      <strong>{fav.product.name}</strong>
+                      {fav.variant && <span className="favorites-item-variant">{fav.variant}</span>}
+                      <span>{formatPrice(fav.product.price, currency)}</span>
                     </div>
                     <div className="favorites-item-actions">
                       <button
                         type="button"
                         className="button-primary favorites-add-btn"
                         onClick={() => {
-                          addToCart(prod.id);
+                          addToCart(fav.product.id, fav.variant);
                         }}
-                        aria-label={`Add ${prod.name} to bag`}
+                        aria-label={`Add ${fav.product.name}${fav.variant ? ` (${fav.variant})` : ''} to bag`}
                       >
                         Add to bag
                       </button>
                       <button
                         type="button"
                         className="favorites-remove-btn"
-                        onClick={() => toggleFavorite(prod.id)}
-                        aria-label={`Remove ${prod.name} from saved items`}
+                        onClick={() => toggleFavorite(fav.product.id, fav.variant)}
+                        aria-label={`Remove ${fav.product.name} from saved items`}
                       >
                         <X size={15} aria-hidden="true" />
                       </button>
@@ -2370,28 +2734,33 @@ export default function SynapseStorefront({
         </aside>
       )}
 
-      {featuredProduct && (
-        <aside className="mobile-sticky-bar" aria-label="Quick order action">
-          <div className="mobile-sticky-info">
-            <span className="mobile-sticky-name">{featuredProduct.name}</span>
-            <strong className="mobile-sticky-price">{formatPrice(featuredProduct.price, currency)}</strong>
-          </div>
-          <button
-            type="button"
-            className="button-primary mobile-sticky-btn"
-            onClick={() => addToCart(featuredProduct.id)}
-            disabled={productAddStates[featuredProduct.id] === 'adding'}
-          >
-            {productAddStates[featuredProduct.id] === 'adding' ? (
-              <span className="button-spinner" aria-hidden="true" />
-            ) : productAddStates[featuredProduct.id] === 'added' ? (
-              'Added ✓'
-            ) : (
-              `Add to Bag — ${formatPrice(featuredProduct.price, currency)}`
-            )}
-          </button>
-        </aside>
-      )}
+      {isCatalogInView && !isFooterInView && !cartOpen && !favoritesOpen && !selectedProduct && !mobileMenuOpen && !sizeGuideOpen && (activeCatalogProduct || featuredProduct) && (() => {
+        const stickyProduct = activeCatalogProduct || featuredProduct;
+        if (!stickyProduct) return null;
+        const addState = productAddStates[stickyProduct.id] || 'idle';
+        return (
+          <aside className="mobile-sticky-bar" aria-label="Quick order action">
+            <div className="mobile-sticky-info">
+              <span className="mobile-sticky-name">{stickyProduct.name}</span>
+              <strong className="mobile-sticky-price">{formatPrice(stickyProduct.price, currency)}</strong>
+            </div>
+            <button
+              type="button"
+              className="button-primary mobile-sticky-btn"
+              onClick={() => addToCart(stickyProduct.id)}
+              disabled={addState === 'adding'}
+            >
+              {addState === 'adding' ? (
+                <span className="button-spinner" aria-hidden="true" />
+              ) : addState === 'added' ? (
+                'Added ✓'
+              ) : (
+                `Add to Bag — ${formatPrice(stickyProduct.price, currency)}`
+              )}
+            </button>
+          </aside>
+        );
+      })()}
     </main>
     </>
   );

@@ -80,23 +80,35 @@ Our palette adheres strictly to the "Engineered Calm" aesthetic—a warm high-ke
 ## 5. Typography System & Modular Scale
 
 ### Font Pairing
-- **Display Typeface**: `Inter Display`, `system-ui`, `-apple-system`, `sans-serif`  
-  *Characteristics*: Tight letter-spacing (`-0.03em`), geometric authority, bold anchors (`font-weight: 700 / 800`).
-- **Body & Instrumentation Typeface**: `Inter`, `-apple-system`, `system-ui`, `sans-serif`  
-  *Characteristics*: Calibrated readability, neutral geometry, optical metrics (`font-weight: 400 / 500`, `line-height: 1.6`).
+- **Display & Headlines Typeface**: `Space Grotesk`, `sans-serif`  
+  *Characteristics*: Geometric authority, modern grotesque architecture, tight line-height (`font-weight: 600 / 700`).
+- **Body & Technical Typeface**: `Inter`, `system-ui`, `-apple-system`, `sans-serif`  
+  *Characteristics*: Calibrated readability, neutral geometry, optical metrics (`font-weight: 400 / 500 / 600`, `line-height: 1.6`).
+- **Telemetry & Monospace Typeface**: `ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `monospace`  
+  *Characteristics*: Strict tabular alignment for timestamps, frequency ratings, and engineering channels.
 
-### Defined Modular Scale (1.250 Major Third)
+### Defined Modular Scale (Minimum 12px Standard)
 
 | Level | Size (px) | Size (rem) | Weight | Line Height | Tracking | Usage |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Micro** | 11px | 0.6875rem | 700 | 1.2 | `+0.08em` | Eyebrow badges, sensor frequency telemetry, uppercase labels |
+| **Micro** | 12px | 0.75rem | 700 | 1.4 | `+0.12em` | Eyebrow badges, telemetry channel headers, uppercase tags (strict >= 12px) |
 | **Caption** | 13px | 0.8125rem | 500 / 600 | 1.4 | `+0.01em` | Metadata timestamps, variant options, cart helper text |
 | **Body Small** | 14px | 0.875rem | 400 / 500 | 1.5 | `0em` | Product card descriptions, spec values, navigation items |
 | **Body Base** | 15px | 0.9375rem | 400 / 500 | 1.6 | `-0.01em` | Core editorial copy, feature explanations, modal details |
 | **Subhead** | 18px | 1.125rem | 600 | 1.4 | `-0.015em` | Card titles, section subheaders, drawer header |
-| **Heading 3** | 22px | 1.375rem | 700 | 1.3 | `-0.02em` | Product card titles, technology pillar headings |
-| **Heading 2** | 32px | 2.000rem | 700 / 800 | 1.2 | `-0.025em` | Section headings ("The Hardware Portfolio", "The Synapse Lab") |
-| **Display 1** | 48px–60px | 3.0rem–3.75rem | 800 | 1.05 | `-0.035em` | Hero flagship headline ("Intelligence, in form.") |
+| **Heading 3** | 20px–22px | 1.25rem–1.375rem | 600 / 700 | 1.3 | `-0.02em` | Product card titles, technology pillar headings |
+| **Heading 2** | 28px–34px | clamp(28px, 3.6vw, 42px) | 600 / 700 | 1.15 | `-0.025em` | Section headings ("The Hardware Portfolio", "The Synapse Lab") |
+| **Display 1** | 38px–62px | clamp(38px, 4.8vw, 62px) | 600 / 700 | 1.06 | `-0.035em` | Hero flagship headline ("Intelligence, in form.") |
+
+---
+
+## 5B. Standardized Curvature & Radius Tokens
+
+| Token | CSS Variable | Value | Role & Applied Components |
+| :--- | :--- | :--- | :--- |
+| **Radius Small** | `--radius-sm` | `8px` | Variant pills, category chips, status badges, micro-tags, inputs |
+| **Radius Medium** | `--radius-md` | `16px` | Product cards, technology pillars, readout cards, toolbars |
+| **Radius Large** | `--radius-lg` | `24px` | Spec modal dialog, slide-over cart drawer, hero 3D stage |
 
 ---
 

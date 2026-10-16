@@ -1,15 +1,35 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 export default function HeroCanvas3D() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [useFallback, setUseFallback] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    // Check reduced motion preference or missing WebGL
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let hasWebGL = false;
+    try {
+      const canvas = document.createElement('canvas');
+      hasWebGL = Boolean(
+        window.WebGLRenderingContext &&
+          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')),
+      );
+    } catch {}
+
+    if (prefersReducedMotion || !hasWebGL) {
+      setUseFallback(true);
+      return;
+    }
 
     let width = container.clientWidth || 540;
     let height = container.clientHeight || 420;
@@ -371,6 +391,34 @@ export default function HeroCanvas3D() {
     };
   }, []);
 
+  if (useFallback) {
+    return (
+      <div
+        className="hero-canvas-3d hero-canvas-fallback"
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        aria-label="Synapse Core Ring — flagship sintered ceramic biometric ring"
+      >
+        <img
+          src="/images/synapse/synapse-core-ring.webp"
+          alt="Synapse Core Ring"
+          style={{
+            maxWidth: '85%',
+            maxHeight: '85%',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 20px 30px rgba(15, 23, 42, 0.12))',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -382,7 +430,7 @@ export default function HeroCanvas3D() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        touchAction: 'none',
+        touchAction: 'pan-y',
       }}
       aria-label="Interactive 3D model of Synapse Core Ring — drag to rotate in 360 degrees"
     />

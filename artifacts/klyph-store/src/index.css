@@ -52,7 +52,7 @@
   --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-ring: 217 91% 60%;
   --app-font-sans: 'Inter', sans-serif;
-  --app-font-mono: 'Space Grotesk', monospace;
+  --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --app-font-serif: Georgia, serif;
   --radius: .5rem;
   --tracking-normal: 0em;
@@ -80,7 +80,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .font-display { font-family: 'Space Grotesk', sans-serif; }
 .mono { font-family: 'Space Grotesk', monospace; letter-spacing: .035em; }
 .page-wrap { width: min(100% - 48px, 1184px); margin-inline: auto; }
-.section-kicker { color: #2563eb; font: 600 11px/1.2 'Space Grotesk', sans-serif; letter-spacing: .17em; text-transform: uppercase; }
+.section-kicker { color: #2563eb; font: 600 12px/1.2 'Space Grotesk', sans-serif; letter-spacing: .17em; text-transform: uppercase; }
 .section-kicker::before { content: ''; display: inline-block; width: 14px; height: 2px; margin: 0 9px 3px 0; background: #2563eb; }
 .hero-title {
   color: transparent;

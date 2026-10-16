@@ -1,245 +1,169 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import SynapseLogo from '@/src/components/SynapseLogo';
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ChevronRight,
-  Database,
-  Fingerprint,
-  HardDrive,
-  Lock,
-  Mail,
-  ShieldCheck,
-  UserCheck,
-} from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Privacy & Biometric Sovereignty Policy',
-  description:
-    'Our uncompromising commitment to on-device neural telemetry privacy, zero data harvesting, and sovereign hardware ownership.',
-};
-
-const PRIVACY_CONTACT_EMAIL = 'privacy@synapselabs.com';
+import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck } from 'lucide-react';
+import Header from '@/src/components/storefront/Header';
+import Footer from '@/src/components/storefront/Footer';
+import CartDrawer from '@/src/components/storefront/CartDrawer';
+import FavoritesDrawer from '@/src/components/storefront/FavoritesDrawer';
+import SearchOverlay from '@/src/components/storefront/SearchOverlay';
+import SizeGuideModal from '@/src/components/storefront/SizeGuideModal';
+import Toast from '@/src/components/storefront/Toast';
+import { StorefrontProvider } from '@/src/context/StorefrontContext';
+import { SUPPORT_EMAIL } from '@/src/lib/constants';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="synapse-canvas privacy-page">
-      {/* Top Header */}
-      <header className="account-topbar">
-        <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-          <SynapseLogo size={26} showWordmark={true} />
-        </Link>
-        <Link className="back-link" href="/" aria-label="Return to store home">
-          <ArrowLeft size={16} aria-hidden="true" /> Back to store
-        </Link>
-      </header>
+    <StorefrontProvider>
+      <Header />
 
-      <main className="page-container privacy-main" id="main-content">
-        {/* Breadcrumb Navigation */}
-        <nav className="privacy-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight size={13} />
-            </li>
-            <li aria-current="page">Privacy Policy</li>
-          </ol>
-        </nav>
+      <main style={{ paddingBlock: '64px 96px', background: 'var(--synapse-bg)' }}>
+        <div className="container" style={{ maxWidth: '860px' }}>
+          {/* Back link */}
+          <Link
+            href="/"
+            className="btn-link"
+            style={{ padding: 0, marginBottom: '24px', display: 'inline-flex' }}
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span>Back to store</span>
+          </Link>
 
-        {/* Hero Section */}
-        <section className="privacy-hero">
-          <span className="eyebrow">
-            <span className="eyebrow-dot" />
-            SYNAPSE LABS // SOVEREIGN PRIVACY COMMITMENT
-          </span>
-          <h1>Biometric Sovereignty &amp; Privacy Policy.</h1>
-          <p className="privacy-lead">
-            Your physiological ground truth belongs to you alone. We engineer hardware that computes locally, respects your silence, and never monetizes your biology.
-          </p>
-          <div className="privacy-meta-badge">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>Effective Date: October 2026 &middot; Version 2.4</span>
-          </div>
-        </section>
-
-        {/* Key Guarantees Banner */}
-        <div className="privacy-guarantees-grid">
-          <div className="guarantee-card">
-            <div className="guarantee-icon">
-              <Fingerprint size={22} aria-hidden="true" />
-            </div>
-            <h3>On-Device Computation</h3>
-            <p>
-              Raw PPG waveforms and HRV algorithms process entirely on your hardware microcontroller.
+          {/* Intro */}
+          <div style={{ marginBottom: '48px' }}>
+            <span className="section-eyebrow">Data Protection</span>
+            <h1 style={{ fontSize: 'clamp(32px, 4vw, 44px)', marginBottom: '16px' }}>
+              Privacy Policy
+            </h1>
+            <p style={{ fontSize: '18px', color: 'var(--synapse-steel)', maxWidth: '640px' }}>
+              Your wellness information belongs exclusively to you. We design hardware that keeps your
+              health metrics private, secure, and under your control.
             </p>
           </div>
-          <div className="guarantee-card">
-            <div className="guarantee-icon">
-              <HardDrive size={22} aria-hidden="true" />
+
+          {/* 3 Core Guarantees */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '20px',
+              marginBottom: '48px',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid var(--synapse-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '24px',
+              }}
+            >
+              <Lock size={22} style={{ color: 'var(--synapse-cobalt)', marginBottom: '12px' }} />
+              <strong style={{ display: 'block', fontSize: '16px', marginBottom: '6px' }}>
+                On-Device Processing
+              </strong>
+              <p style={{ fontSize: '14px', color: 'var(--synapse-steel)', margin: 0, lineHeight: 1.55 }}>
+                Sleep stages and heart rate calculations are calculated locally on your phone and device.
+              </p>
             </div>
-            <h3>Zero Cloud Telemetry</h3>
-            <p>
-              We do not operate a centralized biometric health cloud. Your data is never mined or aggregated.
-            </p>
+
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid var(--synapse-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '24px',
+              }}
+            >
+              <ShieldCheck size={22} style={{ color: 'var(--synapse-cobalt)', marginBottom: '12px' }} />
+              <strong style={{ display: 'block', fontSize: '16px', marginBottom: '6px' }}>
+                Zero Data Monetization
+              </strong>
+              <p style={{ fontSize: '14px', color: 'var(--synapse-steel)', margin: 0, lineHeight: 1.55 }}>
+                We never sell, rent, or broker your personal health information to advertisers or insurers.
+              </p>
+            </div>
+
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid var(--synapse-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '24px',
+              }}
+            >
+              <CheckCircle2 size={22} style={{ color: 'var(--synapse-cobalt)', marginBottom: '12px' }} />
+              <strong style={{ display: 'block', fontSize: '16px', marginBottom: '6px' }}>
+                No Paywalls
+              </strong>
+              <p style={{ fontSize: '14px', color: 'var(--synapse-steel)', margin: 0, lineHeight: 1.55 }}>
+                Your data is never held behind recurring subscription tiers or premium paywalls.
+              </p>
+            </div>
           </div>
-          <div className="guarantee-card">
-            <div className="guarantee-icon">
-              <Lock size={22} aria-hidden="true" />
+
+          {/* Policy Articles */}
+          <div
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '28px',
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>1. Information We Collect</h2>
+              <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', lineHeight: 1.6, margin: 0 }}>
+                When you make a purchase on our store, we collect basic order information (such as your
+                name, delivery address, email, and payment receipt via Stripe). We do not store full credit
+                card numbers on our servers.
+              </p>
             </div>
-            <h3>Stripe PCI-DSS Security</h3>
-            <p>
-              Credit card transactions are tokenized via Stripe. Synapse Labs never handles or stores payment credentials.
-            </p>
+
+            <div>
+              <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>2. How Wellness Data is Handled</h2>
+              <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', lineHeight: 1.6, margin: 0 }}>
+                Sensor measurements from the Core Ring (including optical pulse waves and skin temperature
+                variations) are paired encrypted via Bluetooth directly with your phone. You retain the
+                right to export or delete your health records at any time.
+              </p>
+            </div>
+
+            <div>
+              <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>3. Third-Party Sharing</h2>
+              <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', lineHeight: 1.6, margin: 0 }}>
+                We only share necessary transactional data with vetted logistics partners to deliver your
+                physical order and process payment securely via Stripe. We do not provide user data to
+                data brokers or advertising exchanges.
+              </p>
+            </div>
+
+            <div>
+              <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>4. Contact our Privacy Team</h2>
+              <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', lineHeight: 1.6, margin: 0 }}>
+                For data access requests or questions regarding our privacy practices, contact us at{' '}
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}`}
+                  style={{ color: 'var(--synapse-cobalt)', fontWeight: 600, textDecoration: 'underline' }}
+                >
+                  {SUPPORT_EMAIL}
+                </a>.
+              </p>
+            </div>
           </div>
-        </div>
-
-        {/* Privacy Content Sections */}
-        <div className="privacy-content-card">
-          {/* Section 1 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">01</span>
-              <h2>The Principle of Biometric Sovereignty</h2>
-            </div>
-            <p>
-              At Synapse Labs, privacy is an architectural requirement, not an optional preference toggle. When you wear the <strong>Synapse Core Ring (SC-01)</strong> or use the <strong>Aura Spatial Clip (AC-02)</strong>, all optical photoplethysmography (PPG), heart rate variability (HRV), and autonomic sensory calculations are computed on the device’s local low-power neural microcontroller.
-            </p>
-            <p>
-              Raw capillary reflection waveforms never leave the instrument over unsecured channels. Your physiological signals belong entirely to you, isolated from public clouds, insurance underwriters, and behavioral advertising algorithms.
-            </p>
-          </section>
-
-          {/* Section 2 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">02</span>
-              <h2>Information We Collect &amp; Why</h2>
-            </div>
-            <p>
-              As a direct-to-consumer hardware manufacturer, we collect only the minimal data necessary to fulfill physical orders and support your instruments:
-            </p>
-            <ul className="privacy-list">
-              <li>
-                <strong>Order &amp; Shipping Information:</strong> When you purchase hardware, we collect your name, shipping address, email, and phone number to dispatch your package via insured priority courier and send dispatch tracking notifications.
-              </li>
-              <li>
-                <strong>Account Credentials:</strong> If you register a Synapse Labs account, we store your email address and a cryptographically salted and hashed password (using bcrypt with 10 salt rounds). We never have access to plaintext passwords.
-              </li>
-              <li>
-                <strong>Customer Support Inquiries:</strong> When you contact our concierge team regarding sizing, technical calibration, or warranty service, we retain correspondence records solely to resolve your request.
-              </li>
-            </ul>
-          </section>
-
-          {/* Section 3 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">03</span>
-              <h2>Payment Processing &amp; Financial Security</h2>
-            </div>
-            <p>
-              All online payments are processed through <strong>Stripe, Inc.</strong>, a certified PCI-DSS Level 1 Service Provider. Your payment details (including credit card numbers, expiration dates, and security codes) are entered directly into Stripe’s encrypted tokenization fields.
-            </p>
-            <p>
-              Synapse Labs never observes, processes, or stores your raw credit card numbers or security CVVs on our servers. We receive only a sanitized payment token and transaction status confirmation necessary to confirm your order.
-            </p>
-          </section>
-
-          {/* Section 4 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">04</span>
-              <h2>Cookies &amp; Local Storage Usage</h2>
-            </div>
-            <p>
-              We operate our storefront with extreme technical restraint. We do not use third-party behavioral advertising pixels, cross-site tracking cookies, or commercial fingerprinting scripts.
-            </p>
-            <ul className="privacy-list">
-              <li>
-                <strong>Authentication Cookies:</strong> An HTTP-only, secure JWT cookie (<code>auth_token</code>) is issued when you log in to your account. This allows you to securely view your order history and dispatch status without re-entering credentials.
-              </li>
-              <li>
-                <strong>Functional Local Storage:</strong> We utilize your browser’s local storage solely to remember your shopping bag contents, selected hardware sizes, currency preference (KWD/USD), and saved wishlist items across browser sessions.
-              </li>
-            </ul>
-          </section>
-
-          {/* Section 5 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">05</span>
-              <h2>Data Retention &amp; Customer Rights</h2>
-            </div>
-            <p>
-              Under global data protection standards (including the EU General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA)), you maintain total sovereignty over your personal information:
-            </p>
-            <div className="rights-grid">
-              <div className="right-item">
-                <CheckCircle2 size={18} className="right-check-icon" aria-hidden="true" />
-                <div>
-                  <strong>Right to Access &amp; Portability:</strong>
-                  <span>Request a complete digital export of all order records associated with your account.</span>
-                </div>
-              </div>
-              <div className="right-item">
-                <CheckCircle2 size={18} className="right-check-icon" aria-hidden="true" />
-                <div>
-                  <strong>Right to Erasure (To Be Forgotten):</strong>
-                  <span>Request permanent deletion of your customer profile and account credentials at any time.</span>
-                </div>
-              </div>
-              <div className="right-item">
-                <CheckCircle2 size={18} className="right-check-icon" aria-hidden="true" />
-                <div>
-                  <strong>Zero Data Sales Guarantee:</strong>
-                  <span>We do not sell, rent, or barter customer personal information to any third party under any circumstances.</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Section 6 */}
-          <section className="privacy-section">
-            <div className="section-title-wrap">
-              <span className="privacy-section-num">06</span>
-              <h2>Contact Our Data Protection Concierge</h2>
-            </div>
-            <p>
-              If you have any questions, wish to exercise your rights of erasure, or require technical verification of our on-device privacy architecture, please contact our dedicated Data Protection Officer:
-            </p>
-            <div className="privacy-contact-box">
-              <div className="contact-icon">
-                <Mail size={20} aria-hidden="true" />
-              </div>
-              <div>
-                <strong>Direct Privacy Concierge</strong>
-                <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className="privacy-email-link">
-                  {PRIVACY_CONTACT_EMAIL}
-                </a>
-                <small>Official responses provided within 24 business hours.</small>
-              </div>
-            </div>
-          </section>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="page-container footer-inner">
-          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <SynapseLogo size={24} showWordmark={true} />
-          </Link>
-          <span>Considered technology for everyday life.</span>
-          <Link href="/#philosophy">Our Philosophy</Link>
-          <Link href="/support">Support &amp; FAQ</Link>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/#devices">Collection</Link>
-          <small>&copy; {new Date().getFullYear()} Synapse Labs</small>
-        </div>
-      </footer>
-    </div>
+      <Footer />
+      <CartDrawer />
+      <FavoritesDrawer />
+      <SearchOverlay />
+      <SizeGuideModal />
+      <Toast />
+    </StorefrontProvider>
   );
 }

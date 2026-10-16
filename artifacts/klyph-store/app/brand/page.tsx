@@ -1,244 +1,333 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
+import { ArrowLeft, ArrowRight, CheckCircle2, Heart, ShieldCheck, ShoppingBag, Sparkles } from 'lucide-react';
+import Header from '@/src/components/storefront/Header';
+import Footer from '@/src/components/storefront/Footer';
+import CartDrawer from '@/src/components/storefront/CartDrawer';
+import FavoritesDrawer from '@/src/components/storefront/FavoritesDrawer';
+import SearchOverlay from '@/src/components/storefront/SearchOverlay';
+import SizeGuideModal from '@/src/components/storefront/SizeGuideModal';
+import Toast from '@/src/components/storefront/Toast';
 import SynapseLogo from '@/src/components/SynapseLogo';
-import {
-  ArrowLeft,
-  ArrowRight,
-  BatteryCharging,
-  CheckCircle2,
-  ChevronRight,
-  Cpu,
-  EyeOff,
-  Fingerprint,
-  HardDrive,
-  Heart,
-  Layers,
-  Lock,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
+import { StorefrontProvider } from '@/src/context/StorefrontContext';
 
-export const metadata: Metadata = {
-  title: 'Our Story & Philosophy of Engineered Calm',
-  description:
-    'Tactile neuro-wearables and ambient sensory instruments engineered for screen-free focus, sub-millimeter biometric precision, and complete data sovereignty.',
-};
-
-export default function BrandStoryPage() {
-  const personalityPillars = [
+export default function BrandIdentityPage() {
+  const personalityWords = [
     {
       word: 'Quiet',
       sub: 'Screen-Free Serenity',
-      desc: 'Restrained, serene, distraction-free. We reject glowing wrist touchscreens, buzzes, and dopamine urgency loops. Synapse instruments collect vital physiological truth in total silence, keeping you fully immersed in your work.',
+      desc: 'Restrained, serene, distraction-free. We reject glowing touchscreens, buzzing notifications, and dopamine loops. Synapse collects vital wellness insights in total silence, keeping you immersed in your day.',
     },
     {
       word: 'Precise',
-      sub: 'Sub-Millimeter Calibration',
-      desc: 'Surgical, geometric, calibrated. Every tolerance, multi-spectral optical sensor wavelength (530nm green and 660nm infrared), and metallic chamfer is engineered with scientific clarity and uncompromising truth.',
+      sub: 'Geometric Clarity',
+      desc: 'Calibrated, honest, and scientifically grounded. Every tolerance, dual-wavelength optical sensor placement, and metallic chamfer is designed for clear reflection and dependable wellness metrics.',
     },
     {
       word: 'Confident',
-      sub: 'Monolithic Durability',
-      desc: 'Monolithic, unhurried, enduring. Sintered zirconia ceramics, grade 5 titanium chassis, and 10 ATM water resistance ensure our instruments are built to endure decades of continuous wear without degradation.',
+      sub: 'Enduring Materiality',
+      desc: 'Unhurried and enduring. Sintered zirconia ceramics, grade 5 titanium, and 10 ATM water resistance ensure our hardware withstands years of continuous wear without degradation.',
     },
   ];
 
+  const palette = [
+    { name: 'Porcelain', hex: '#F6F5F0', role: 'Page background & matte finishes' },
+    { name: 'Obsidian', hex: '#0F172A', role: 'Primary text & high-contrast buttons' },
+    { name: 'Steel', hex: '#475569', role: 'Secondary body copy & captions' },
+    { name: 'Cobalt', hex: '#2563EB', role: 'Interactive links, focus rings & accents' },
+    { name: 'White', hex: '#FFFFFF', role: 'Card surfaces & modal backgrounds' },
+  ];
+
+  const customerJourney = [
+    { step: '01', title: 'Discover & Browse', desc: 'Shopper reviews clear benefits, starting prices, and 3D ring views.' },
+    { step: '02', title: 'Select Variant', desc: 'Picks ring size (US 8-11) or finish, with instant access to the Sizing Guide.' },
+    { step: '03', title: '1-Click Add to Bag', desc: 'Item added immediately; slim bag drawer opens with subtotal highlighted.' },
+    { step: '04', title: 'Fast Stripe Checkout', desc: 'Secure redirect to Stripe with chosen currency (KWD or USD).' },
+    { step: '05', title: 'Courier Delivery & Fit', desc: 'Tracked doorstep dispatch backed by our 30-day fit guarantee.' },
+  ];
+
   return (
-    <div className="synapse-canvas brand-sheet-page">
-      {/* Brand Header */}
-      <header className="account-topbar">
-        <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-          <SynapseLogo size={26} showWordmark={true} />
-        </Link>
-        <Link className="back-link" href="/" aria-label="Return to store home">
-          <ArrowLeft size={16} aria-hidden="true" /> Back to store
-        </Link>
-      </header>
+    <StorefrontProvider>
+      <Header />
 
-      {/* Main Content */}
-      <main className="page-container brand-main" id="main-content">
-        {/* Breadcrumb Navigation */}
-        <nav className="privacy-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight size={13} />
-            </li>
-            <li aria-current="page">Our Philosophy</li>
-          </ol>
-        </nav>
+      <main style={{ paddingBlock: '64px 96px', background: 'var(--synapse-bg)' }}>
+        <div className="container" style={{ maxWidth: '960px' }}>
+          {/* Back link */}
+          <Link
+            href="/"
+            className="btn-link"
+            style={{ padding: 0, marginBottom: '24px', display: 'inline-flex' }}
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span>Back to store</span>
+          </Link>
 
-        {/* Intro Hero */}
-        <section className="brand-hero-section">
-          <div className="brand-hero-copy">
-            <span className="eyebrow">
-              <span className="eyebrow-dot" />
-              THE SYNAPSE LABS STORY // FORM, PRIVACY &amp; RESTRAINT
-            </span>
-            <h1>
-              Intelligence, in form.
-              <span className="headline-muted">The Philosophy of Engineered Calm.</span>
+          {/* Intro Hero */}
+          <div style={{ marginBottom: '56px' }}>
+            <span className="section-eyebrow">Class Rubric &amp; Brand System</span>
+            <h1 style={{ fontSize: 'clamp(32px, 4vw, 44px)', marginBottom: '16px' }}>
+              Synapse Brand Identity
             </h1>
-            <p className="brand-hero-lead">
-              A tactile, museum-grade hardware studio dedicated to high-performance knowledge workers.
-              Synthesizing sintered zirconia ceramics, titanium precision, and sub-millimeter
-              neural telemetry into an unyielding, screen-free physical sanctuary.
+            <p style={{ fontSize: '18px', color: 'var(--synapse-steel)', maxWidth: '640px' }}>
+              The design tokens, visual hierarchy, personality pillars, and customer journey
+              powering Synapse Labs.
             </p>
           </div>
 
-          <div className="brand-summary-cards">
-            <div className="brand-summary-card">
-              <span className="summary-card-label">DESIGN ETHOS</span>
-              <strong>Engineered Calm</strong>
-              <small>Tactile monolithic ceramics with zero digital distraction</small>
-            </div>
-            <div className="brand-summary-card">
-              <span className="summary-card-label">CORE PROMISE</span>
-              <strong>Screen-Free Insight</strong>
-              <small>Continuous biometric ground truth without wrist screen anxiety</small>
-            </div>
-            <div className="brand-summary-card">
-              <span className="summary-card-label">DATA SECURITY</span>
-              <strong>Sovereign Privacy</strong>
-              <small>On-device telemetry calculation with zero cloud harvesting</small>
-            </div>
-          </div>
-        </section>
+          {/* Section 1: Concept & Slogan */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              marginBottom: '32px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>1. Concept, Purpose &amp; Slogan</h2>
+            <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', marginBottom: '20px' }}>
+              Synapse builds screen-free hardware for knowledge workers and individuals who desire
+              deep wellness awareness without notifications or digital fatigue.
+            </p>
 
-        {/* 1. Store Concept & Positioning */}
-        <section className="brand-section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">01 / CONCEPT &amp; PURPOSE</span>
-              <h2>Why We Build Screen-Free Hardware.</h2>
+            <div
+              style={{
+                padding: '20px 24px',
+                background: 'var(--synapse-bg)',
+                borderRadius: 'var(--radius-sm)',
+                borderLeft: '4px solid var(--synapse-cobalt)',
+              }}
+            >
+              <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--synapse-cobalt)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Brand Slogan
+              </span>
+              <strong style={{ display: 'block', fontSize: '20px', color: 'var(--synapse-obsidian)', marginTop: '4px' }}>
+                &ldquo;Quiet insight. Zero distraction.&rdquo;
+              </strong>
             </div>
-            <p>Technology should respect your attention and fit your life in absolute silence.</p>
-          </div>
+          </section>
 
-          <div className="concept-grid">
-            <article className="concept-card">
-              <div className="concept-card-icon"><Sparkles size={20} aria-hidden="true" /></div>
-              <h3>What We Build</h3>
-              <p>
-                Tactile neuro-wearables and ambient sensory instruments: the flagship <strong>Synapse Core Ring (SC-01)</strong> with dual-wavelength optical PPG, the <strong>Aura Spatial Clip (AC-02)</strong> bone-conduction spatial sound clip, and the <strong>NeuroDock Magnetic Slate (ND-03)</strong> 15W resonant induction charger.
-              </p>
-            </article>
+          {/* Section 2: Logo & Wordmark */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              marginBottom: '32px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>2. Logo &amp; Wordmark</h2>
+            <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', marginBottom: '24px' }}>
+              The logomark represents a stylized optical heartbeat pulse passing through a ceramic
+              ring coordinate. Paired with Space Grotesk lettering.
+            </p>
 
-            <article className="concept-card">
-              <div className="concept-card-icon"><Fingerprint size={20} aria-hidden="true" /></div>
-              <h3>Who It&rsquo;s For</h3>
-              <p>
-                Knowledge workers, creative technologists, researchers, writers, and thinkers who demand deep autonomic insight and spatial acoustic clarity without the constant interruption, visual clutter, or anxiety of wrist touchscreens.
-              </p>
-            </article>
-
-            <article className="concept-card">
-              <div className="concept-card-icon"><ShieldCheck size={20} aria-hidden="true" /></div>
-              <h3>The Sovereign Difference</h3>
-              <p>
-                Absolute screen-free peace of mind, high-density sintered zirconia ceramic weight, 10 ATM waterproof assurance, and cryptographic on-device biometric privacy with zero cloud data harvesting or subscription paywalls.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        {/* 2. Three Personality Tenets */}
-        <section className="brand-section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">02 / CORE ATTRIBUTES</span>
-              <h2>The 3 Pillars of Our Craft.</h2>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '32px',
+                padding: '28px',
+                background: 'var(--synapse-bg)',
+                borderRadius: 'var(--radius-sm)',
+              }}
+            >
+              <SynapseLogo size={42} showWordmark={true} />
             </div>
-            <p>The timeless foundation governing our engineering tolerances, physical materials, and product design.</p>
-          </div>
+          </section>
 
-          <div className="personality-grid">
-            {personalityPillars.map((item, idx) => (
-              <article className="personality-card" key={idx}>
-                <span className="personality-index">0{idx + 1}</span>
-                <h3>{item.word}</h3>
-                <span className="personality-sub">{item.sub}</span>
-                <p>{item.desc}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+          {/* Section 3: Three Personality Words */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              marginBottom: '32px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>3. The Three Personality Pillars</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+              {personalityWords.map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '24px',
+                    background: 'var(--synapse-bg)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--synapse-border-light)',
+                  }}
+                >
+                  <strong style={{ display: 'block', fontSize: '20px', color: 'var(--synapse-obsidian)' }}>
+                    {item.word}
+                  </strong>
+                  <span style={{ display: 'block', fontSize: '13px', color: 'var(--synapse-cobalt)', fontWeight: 600, margin: '4px 0 10px' }}>
+                    {item.sub}
+                  </span>
+                  <p style={{ fontSize: '14px', color: 'var(--synapse-steel)', margin: 0, lineHeight: 1.55 }}>
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* 3. Material Science & Architecture */}
-        <section className="brand-section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">03 / MATERIAL SCIENCE</span>
-              <h2>Monolithic Materiality.</h2>
+          {/* Section 4: Color Palette & Typography */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              marginBottom: '32px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>4. Curated Color Palette &amp; Typography</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+              {palette.map((color) => (
+                <div
+                  key={color.name}
+                  style={{
+                    border: '1px solid var(--synapse-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ height: '70px', background: color.hex, borderBottom: '1px solid rgba(0,0,0,0.06)' }} />
+                  <div style={{ padding: '12px' }}>
+                    <strong style={{ display: 'block', fontSize: '14px' }}>{color.name}</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--synapse-muted)', fontFamily: 'monospace' }}>
+                      {color.hex}
+                    </span>
+                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--synapse-steel)', marginTop: '4px' }}>
+                      {color.role}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <p>Engineered from earth-hardened compounds designed for tactile warmth and physical permanence.</p>
-          </div>
 
-          <div className="material-science-grid">
-            <div className="material-card">
-              <div className="material-card-icon"><Cpu size={20} aria-hidden="true" /></div>
-              <h3>Sintered Zirconia Ceramic</h3>
-              <p>
-                Diamond-polished at 1,500&deg;C. Highly biocompatible, hypoallergenic, and impervious to daily micro-abrasions, providing deep tactile warmth that mirrors natural stone.
-              </p>
-            </div>
-            <div className="material-card">
-              <div className="material-card-icon"><ShieldCheck size={20} aria-hidden="true" /></div>
-              <h3>Grade 5 Titanium Chassis</h3>
-              <p>
-                High tensile-strength aerospace alloy provides sub-millimeter rigidity, housing the optical sensor package while weighing under 4 grams.
-              </p>
-            </div>
-            <div className="material-card">
-              <div className="material-card-icon"><BatteryCharging size={20} aria-hidden="true" /></div>
-              <h3>Resonant Magnetic Induction</h3>
-              <p>
-                Zero mechanical charging pins to corrode or collect residue. 15W magnetic coupling charges the ring from empty to 100% in 45 minutes.
-              </p>
-            </div>
-          </div>
-        </section>
+            <h3 style={{ fontSize: '17px', marginBottom: '8px' }}>Typography System</h3>
+            <p style={{ fontSize: '14.5px', color: 'var(--synapse-steel)', margin: 0 }}>
+              <strong>Headings:</strong> Space Grotesk (geometric, contemporary, precise).<br />
+              <strong>Body:</strong> Inter (16px base, 1.6 line height for effortless readability).
+            </p>
+          </section>
 
-        {/* 4. Sovereign Privacy Section */}
-        <section className="brand-section">
-          <div className="brand-privacy-card">
-            <div className="privacy-card-inner">
-              <span className="eyebrow">04 / SOVEREIGN DATA</span>
-              <h2>Your biology is not our product.</h2>
-              <p>
-                Every sensor reading, HRV computation, and sleep architecture curve is calculated locally on the hardware. We do not sell your biometrics, build advertising profiles, or hold your health hostage behind a monthly subscription.
-              </p>
-              <div className="privacy-cta-row">
-                <Link href="/privacy" className="button-primary">
-                  Read Full Biometric Sovereignty Policy <ArrowRight size={16} aria-hidden="true" />
-                </Link>
-                <Link href="/#devices" className="button-secondary">
-                  Explore Hardware Collection
-                </Link>
-              </div>
+          {/* Section 5: Customer Journey Diagram */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+              marginBottom: '32px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>5. Customer Purchase Journey</h2>
+            <p style={{ fontSize: '15px', color: 'var(--synapse-steel)', marginBottom: '24px' }}>
+              Target shopper journey engineered for 2 to 3 step purchase clarity with zero dark patterns.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {customerJourney.map((step) => (
+                <div
+                  key={step.step}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    padding: '16px',
+                    background: 'var(--synapse-bg)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-heading)',
+                      fontWeight: 700,
+                      color: 'var(--synapse-cobalt)',
+                      fontSize: '16px',
+                      marginTop: '2px',
+                    }}
+                  >
+                    {step.step}
+                  </span>
+                  <div>
+                    <strong style={{ fontSize: '15px', display: 'block', color: 'var(--synapse-obsidian)' }}>
+                      {step.title}
+                    </strong>
+                    <span style={{ fontSize: '13.5px', color: 'var(--synapse-steel)' }}>{step.desc}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* Section 6: Design Tokens Reference */}
+          <section
+            style={{
+              background: '#FFFFFF',
+              border: '1px solid var(--synapse-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '36px',
+            }}
+          >
+            <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>6. Design Tokens Table</h2>
+            <table className="size-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Token</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Colors</td>
+                  <td><code>--synapse-bg</code></td>
+                  <td>#F6F5F0 (Porcelain)</td>
+                </tr>
+                <tr>
+                  <td>Colors</td>
+                  <td><code>--synapse-obsidian</code></td>
+                  <td>#0F172A (Obsidian Slate)</td>
+                </tr>
+                <tr>
+                  <td>Colors</td>
+                  <td><code>--synapse-cobalt</code></td>
+                  <td>#2563EB (Cobalt Blue)</td>
+                </tr>
+                <tr>
+                  <td>Radius</td>
+                  <td><code>--radius-sm / md / lg</code></td>
+                  <td>8px / 16px / 24px</td>
+                </tr>
+                <tr>
+                  <td>Grid</td>
+                  <td><code>--space-1 .. 24</code></td>
+                  <td>8px baseline rhythm (4, 8, 16, 24, 32, 48, 96px)</td>
+                </tr>
+                <tr>
+                  <td>Interactive</td>
+                  <td>Touch Target</td>
+                  <td>Minimum 44px on all links &amp; buttons</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="page-container footer-inner">
-          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <SynapseLogo size={24} showWordmark={true} />
-          </Link>
-          <span>Considered technology for everyday life.</span>
-          <Link href="/#philosophy">Our Philosophy</Link>
-          <Link href="/support">Support &amp; FAQ</Link>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/#devices">Collection</Link>
-          <small>&copy; {new Date().getFullYear()} Synapse Labs</small>
-        </div>
-      </footer>
-    </div>
+      <Footer />
+      <CartDrawer />
+      <FavoritesDrawer />
+      <SearchOverlay />
+      <SizeGuideModal />
+      <Toast />
+    </StorefrontProvider>
   );
 }

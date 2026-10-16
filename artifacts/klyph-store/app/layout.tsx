@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import '../src/index.css';
+import '../src/storefront.css';
 import '../src/synapse.css';
 
 export const viewport: Viewport = {
@@ -13,20 +14,19 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://synapselabs-nu.vercel.app'),
   title: {
-    default: 'SYNAPSE LABS — Engineered Calm Hardware Showroom',
-    template: '%s | SYNAPSE LABS',
+    default: 'Synapse — Smart Rings and Audio for Wellness',
+    template: '%s | Synapse',
   },
   description:
-    'Precision neural telemetry, spatial audio instrumentation, and monolithic magnetic charging housed in tactile monolithic ceramics.',
+    'A smart ring that tracks your sleep, heart rate, and recovery without screens or buzzing. Your health data stays private on your device.',
   keywords: [
-    'Synapse Labs',
-    'neuro-wearable',
+    'Synapse',
     'smart ring',
-    'biometric telemetry',
-    'spatial audio',
-    'bone conduction',
-    'magnetic induction charging',
-    'porcelain ceramic wearable',
+    'sleep tracking',
+    'heart rate monitor',
+    'wellness insights',
+    'open-ear audio',
+    'magnetic charger',
   ],
   authors: [{ name: 'Synapse Labs' }],
   creator: 'Synapse Labs',
@@ -35,24 +35,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://synapselabs-nu.vercel.app',
-    siteName: 'SYNAPSE LABS',
-    title: 'SYNAPSE LABS — Engineered Calm Hardware Showroom',
+    siteName: 'Synapse Labs',
+    title: 'Synapse — Smart Rings and Audio for Wellness',
     description:
-      'Precision neural telemetry housed in tactile monolithic ceramics. Calm, unyielding performance engineered for seamless sensory integration.',
+      'A smart ring that tracks your sleep, heart rate, and recovery without screens or buzzing. Your health data stays private on your device.',
     images: [
       {
         url: '/images/synapse/synapse-core-ring.webp',
         width: 1200,
         height: 630,
-        alt: 'Synapse Core Ring — Flagship Biometric Neuro-Wearable',
+        alt: 'Synapse Core Ring',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SYNAPSE LABS — Engineered Calm Hardware Showroom',
+    title: 'Synapse — Smart Rings and Audio for Wellness',
     description:
-      'Precision neural telemetry, spatial audio instrumentation, and monolithic magnetic charging.',
+      'A smart ring that tracks your sleep, heart rate, and recovery without screens or buzzing.',
     images: ['/images/synapse/synapse-core-ring.webp'],
   },
 };
@@ -68,4 +68,3 @@ export default function RootLayout({
     </html>
   );
 }
-

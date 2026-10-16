@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import SynapseLogo from '@/src/components/SynapseLogo';
 
 type AuthFormProps = { mode: 'login' | 'signup' };
 
@@ -91,8 +92,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     <main className="account-shell" id="main-content">
       <header className="account-topbar">
         <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-          <span className="brand-mark" aria-hidden="true">S</span>
-          <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+          <SynapseLogo size={24} showWordmark={true} />
         </Link>
         <Link className="back-link" href="/" aria-label="Return to store home">
           <ArrowLeft size={15} aria-hidden="true" /> Back to store

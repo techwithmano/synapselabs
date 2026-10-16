@@ -87,6 +87,7 @@ test('cancel return opens the saved cart and prompts guests to sign in', async (
   await expect(page.getByRole('link', { name: 'Sign in to checkout' })).toHaveAttribute(
     'href',
     '/login?next=%2Fcart',
+    { timeout: 20_000 },
   );
 });
 

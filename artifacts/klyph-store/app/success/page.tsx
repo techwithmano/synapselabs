@@ -9,6 +9,7 @@ import { toStripeMinorUnits, type CheckoutCurrency } from '@/lib/pricing';
 import { getStripeClient } from '@/lib/stripe';
 import CartClear from './CartClear';
 import Order from '@/models/Order';
+import SynapseLogo from '@/src/components/SynapseLogo';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,7 @@ function CheckoutStatus({
     <main className="account-shell success-page">
       <header className="account-topbar">
         <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-          <span className="brand-mark" aria-hidden="true">S</span>
-          <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+          <SynapseLogo size={24} showWordmark={true} />
         </Link>
         <Link className="back-link" href="/">
           <ArrowLeft size={15} aria-hidden="true" /> Continue shopping

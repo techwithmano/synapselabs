@@ -8,6 +8,8 @@ import Order from '@/models/Order';
 import User from '@/models/User';
 import { Types } from 'mongoose';
 import { formatCurrencyAmount, type CheckoutCurrency } from '@/lib/pricing';
+import SynapseLogo from '@/src/components/SynapseLogo';
+import Footer from '@/src/components/storefront/Footer';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +55,7 @@ export default async function OrdersPage() {
     <main className="account-shell">
       <header className="account-topbar">
         <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-          <span className="brand-mark" aria-hidden="true">S</span>
-          <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
+          <SynapseLogo size={24} showWordmark={true} />
         </Link>
         <Link className="back-link" href="/">
           <ArrowLeft size={15} aria-hidden="true" /> Continue shopping
@@ -151,20 +152,7 @@ export default async function OrdersPage() {
         )}
       </section>
 
-      <footer className="site-footer">
-        <div className="page-container footer-inner">
-          <Link className="brand-lockup" href="/" aria-label="Synapse Labs home">
-            <span className="brand-mark" aria-hidden="true">S</span>
-            <span className="brand-words"><strong>SYNAPSE</strong><small>LABS</small></span>
-          </Link>
-          <span>Considered technology for everyday life.</span>
-          <Link href="/#philosophy">Our Philosophy</Link>
-          <Link href="/support">Support &amp; Sizing</Link>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/#devices">Collection</Link>
-          <small>&copy; {new Date().getFullYear()} Synapse Labs</small>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

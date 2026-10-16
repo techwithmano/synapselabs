@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import '../src/index.css';
-import '../src/storefront.css';
 import '../src/synapse.css';
+import '../src/storefront.css';
 
 export const viewport: Viewport = {
   themeColor: '#0F172A',

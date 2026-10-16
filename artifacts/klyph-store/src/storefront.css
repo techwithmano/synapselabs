@@ -1363,3 +1363,108 @@ p {
     transform: translateY(0);
   }
 }
+
+/* ==========================================================================
+   SYNAPSE.CSS CONFLICT RESETS
+   These rules are placed last so storefront.css wins over synapse.css on
+   all shared class names used by the new storefront components.
+   ========================================================================== */
+
+/* Hero: synapse.css turns .hero-section into a grid with no container padding.
+   Reset it to a plain block so the inner .container.hero-grid is the grid. */
+.hero-section {
+  display: block;
+  min-height: unset;
+  grid-template-columns: unset;
+  gap: unset;
+  padding-block: unset;
+  padding-top: clamp(48px, 8vw, 84px);
+  padding-bottom: clamp(60px, 9vw, 96px);
+  overflow: hidden;
+}
+
+/* Hero copy: synapse.css sets max-width: 520px with no flex context. Reset. */
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: unset;
+  width: auto;
+}
+
+/* Header: synapse.css sets .site-header-inner padding: 0 20px.
+   The new header wraps content in .container already, so no extra padding. */
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  min-height: unset;
+  gap: unset;
+}
+
+/* Nav shell: synapse.css adds a floating pill nav-shell.
+   The new header doesn't use .nav-shell, but reset in case of bleed. */
+.nav-shell {
+  position: static;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  max-width: unset;
+}
+
+/* Brand lockup: synapse.css sets flex: 0 0 auto which is fine, keep it. */
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--synapse-obsidian);
+  flex: 0 0 auto;
+}
+
+/* Main nav gap override */
+.main-nav {
+  gap: clamp(14px, 1.8vw, 24px);
+}
+
+/* Nav link: synapse.css has no min-height, new storefront needs 44px touch. */
+.nav-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--synapse-steel);
+  text-decoration: none;
+  transition: color var(--duration-fast);
+}
+.nav-link:hover {
+  color: var(--synapse-obsidian);
+}
+
+/* Body background: synapse.css sets porcelain, storefront.css also sets it.
+   Ensure it uses the token. */
+body {
+  background-color: var(--synapse-bg);
+  min-width: 320px;
+}
+
+/* h1 inside hero: synapse sets very heavy font. Reset to storefront tokens. */
+.hero-copy h1,
+.hero-headline {
+  font: unset;
+  font-family: var(--font-heading);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--synapse-obsidian);
+  margin-bottom: 16px;
+  max-width: 600px;
+}
+

@@ -22,7 +22,7 @@ export default defineConfig({
     : {
         command:
           process.platform === 'win32'
-            ? 'cmd /c npx pnpm exec next dev --hostname 127.0.0.1 --port 4179'
+            ? 'cmd /c pnpm.cmd exec next dev --hostname 127.0.0.1 --port 4179'
             : 'pnpm exec next dev --hostname 127.0.0.1 --port 4179',
         url: 'http://127.0.0.1:4179',
         reuseExistingServer: !process.env.CI,

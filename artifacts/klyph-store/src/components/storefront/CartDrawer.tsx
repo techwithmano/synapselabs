@@ -11,6 +11,7 @@ export default function CartDrawer() {
     closeCart,
     cartItems,
     subtotal,
+    formattedSubtotal,
     currency,
     setCurrency,
     formatPrice,
@@ -81,7 +82,6 @@ export default function CartDrawer() {
               </button>
               <button
                 type="button"
-                data-testid="button-currency-usd"
                 onClick={() => setCurrency('USD')}
                 style={{
                   padding: '4px 8px',
@@ -207,7 +207,7 @@ export default function CartDrawer() {
           <div className="drawer-footer">
             <div className="cart-subtotal-row">
               <span>Subtotal</span>
-              <span data-testid="text-cart-subtotal">{formatPrice(subtotal)}</span>
+              <span data-testid="text-cart-subtotal">{formattedSubtotal}</span>
             </div>
 
             <div className="cart-shipping-note">

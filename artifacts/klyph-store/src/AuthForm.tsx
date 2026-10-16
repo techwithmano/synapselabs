@@ -57,10 +57,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email.trim(), password }),
       });
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as { error?: string; user?: { id: string; name: string; email: string } };
       if (!response.ok) {
         setError(result.error ?? 'Unable to continue. Please try again.');
         return;
+      }
+
+      if (result.user && typeof window !== 'undefined') {
+        try {
+          window.sessionStorage.setItem('synapse_auth_user', JSON.stringify(result.user));
+        } catch {}
       }
 
       const requestedNext = new URLSearchParams(window.location.search).get('next');

@@ -16,6 +16,8 @@ function getInitials(name?: string): string {
 export default function Header() {
   const {
     account,
+    currency,
+    setCurrency,
     cartCount,
     openCart,
     favorites,
@@ -53,6 +55,58 @@ export default function Header() {
 
         {/* Header Actions */}
         <div className="header-actions">
+          {/* Desktop Currency Switcher */}
+          <div
+            className="currency-switch-header desktop-only"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: '#F1F5F9',
+              padding: '2px',
+              borderRadius: '8px',
+              gap: '2px',
+            }}
+          >
+            <button
+              type="button"
+              data-testid="button-currency-kwd"
+              onClick={() => setCurrency('KWD')}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: 'none',
+                background: currency === 'KWD' ? '#FFFFFF' : 'transparent',
+                color: currency === 'KWD' ? 'var(--synapse-obsidian)' : 'var(--synapse-steel)',
+                boxShadow: currency === 'KWD' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                cursor: 'pointer',
+              }}
+              aria-label="Switch to Kuwaiti Dinar"
+            >
+              KWD
+            </button>
+            <button
+              type="button"
+              data-testid="button-currency-usd"
+              onClick={() => setCurrency('USD')}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: 'none',
+                background: currency === 'USD' ? '#FFFFFF' : 'transparent',
+                color: currency === 'USD' ? 'var(--synapse-obsidian)' : 'var(--synapse-steel)',
+                boxShadow: currency === 'USD' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                cursor: 'pointer',
+              }}
+              aria-label="Switch to US Dollar"
+            >
+              USD
+            </button>
+          </div>
+
           {/* Search trigger */}
           <button
             type="button"
@@ -84,8 +138,7 @@ export default function Header() {
               <Link
                 href="/orders"
                 className="account-avatar"
-                aria-label={`Account orders for ${account.name}`}
-                title="My orders"
+                aria-label={`Account profile for ${account.name}`}
               >
                 {getInitials(account.name)}
               </Link>
@@ -99,9 +152,9 @@ export default function Header() {
                 className="btn-icon desktop-only"
                 style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px' }}
                 aria-label="Log out"
-                title="Log out"
               >
                 <LogOut size={16} aria-hidden="true" />
+                <span className="sr-only">Log out</span>
               </button>
             </div>
           ) : (

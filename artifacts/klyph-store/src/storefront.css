@@ -223,6 +223,11 @@ p {
   height: 64px;
   display: flex;
   align-items: center;
+  pointer-events: auto !important;
+}
+
+.site-header * {
+  pointer-events: auto;
 }
 
 .site-header-inner {
@@ -250,7 +255,7 @@ p {
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: clamp(14px, 1.8vw, 24px);
 }
 
 .nav-link {
@@ -299,7 +304,7 @@ p {
   display: none;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1023px) {
   .desktop-nav {
     display: none;
   }
@@ -1012,12 +1017,14 @@ p {
   backdrop-filter: blur(4px);
   z-index: 100;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--duration-normal) ease;
+  transition: opacity var(--duration-normal) ease, visibility var(--duration-normal);
 }
 
 .drawer-backdrop.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -1033,11 +1040,15 @@ p {
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform var(--duration-normal) var(--ease-snappy);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform var(--duration-normal) var(--ease-snappy), visibility var(--duration-normal);
 }
 
 .drawer.is-open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .drawer-header {
@@ -1180,12 +1191,14 @@ p {
   justify-content: center;
   padding: 20px;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--duration-normal) ease;
+  transition: opacity var(--duration-normal) ease, visibility var(--duration-normal);
 }
 
 .modal-backdrop.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -1306,11 +1319,15 @@ p {
   justify-content: space-between;
   gap: 12px;
   transform: translateY(100%);
-  transition: transform var(--duration-normal) var(--ease-snappy);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform var(--duration-normal) var(--ease-snappy), visibility var(--duration-normal);
 }
 
 .mobile-sticky-bar.is-visible {
   transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 @media (min-width: 769px) {

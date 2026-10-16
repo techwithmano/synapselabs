@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, PackageCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, PackageCheck } from 'lucide-react';
 import connectToDatabase from '@/lib/db';
 import { AUTH_COOKIE_NAME, verifyAuthToken } from '@/lib/auth';
 import Order from '@/models/Order';
@@ -110,13 +110,18 @@ export default async function OrdersPage() {
                 </div>
                 {order.status === 'pending' && (
                   <div className="order-pending-notice" role="note">
-                    <span>Payment was not completed for this checkout session.</span>
+                    <div className="order-pending-msg">
+                      <AlertCircle size={16} className="order-pending-icon" aria-hidden="true" />
+                      <span>Payment was not completed for this checkout session.</span>
+                    </div>
                     <div className="order-pending-links">
-                      <Link href="/cart" className="order-action-link">
-                        Return to cart &rarr;
+                      <Link href="/cart" className="order-action-link order-action-btn order-action-btn--primary">
+                        <span>Return to cart</span>
+                        <ArrowRight size={14} aria-hidden="true" />
                       </Link>
-                      <Link href="/support" className="order-action-link">
-                        Need help? Sizing &amp; Support &rarr;
+                      <Link href="/support" className="order-action-link order-action-btn order-action-btn--secondary">
+                        <span>Need help? Sizing &amp; Support</span>
+                        <ArrowRight size={14} aria-hidden="true" />
                       </Link>
                     </div>
                   </div>

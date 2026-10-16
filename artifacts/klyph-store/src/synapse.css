@@ -113,11 +113,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .site-header {
   position: sticky;
   z-index: 50;
-  top: 12px;
-  background: transparent;
-  border: none;
-  padding: 0 16px;
-  pointer-events: none;
+  top: 0;
+  padding: 0;
+  pointer-events: auto;
 }
 
 .nav-shell {
@@ -1698,6 +1696,70 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .order-line-name strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .order-line-name span, .order-card-foot time { color: var(--synapse-muted); font-size: 12px; }
 .order-line-price { margin-left: auto; color: #334155; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+.order-pending-notice {
+  margin: 14px 20px 18px;
+  padding: 16px 18px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.order-pending-msg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #92400E;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.order-pending-icon {
+  color: #D97706;
+  flex-shrink: 0;
+}
+.order-pending-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.order-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.order-action-btn--primary {
+  background: var(--synapse-obsidian);
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+.order-action-btn--primary:hover {
+  background: #1E293B;
+  transform: translateY(-1px);
+}
+.order-action-btn--secondary {
+  background: #FFFFFF;
+  color: #475569 !important;
+  border: 1px solid #E2E8F0;
+}
+.order-action-btn--secondary:hover {
+  color: var(--synapse-obsidian) !important;
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+}
+
 .order-card-foot { border-top: 1px solid #f1f5f9; }
 .order-card-foot strong { font-size: 12px; }
 .orders-empty { display: flex; flex-direction: column; align-items: center; padding: 55px 24px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #fff; text-align: center; }

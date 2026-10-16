@@ -30,6 +30,7 @@ type StorefrontContextType = {
   cartItems: (CartLine & { product: Product })[];
   cartCount: number;
   subtotal: number;
+  formattedSubtotal: string;
   cartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
@@ -79,7 +80,14 @@ export function StorefrontProvider({
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productError, setProductError] = useState('');
   const [currency, setCurrency] = useState<Currency>('KWD');
-  const [account, setAccount] = useState<Account | null>(null);
+  const [account, setAccount] = useState<Account | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const cached = window.sessionStorage.getItem('synapse_auth_user');
+      if (cached) return JSON.parse(cached) as Account;
+    } catch {}
+    return null;
+  });
   const [accountLoading, setAccountLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -168,12 +176,24 @@ export function StorefrontProvider({
     // Check auth
     void fetch('/api/auth/me', { cache: 'no-store' })
       .then(async (response) => {
-        if (!response.ok) return null;
+        if (!response.ok) {
+          try { window.sessionStorage.removeItem('synapse_auth_user'); } catch {}
+          return null;
+        }
         const result = (await response.json()) as { user?: Account | null };
-        return result.user ?? null;
+        const user = result.user ?? null;
+        if (user) {
+          try { window.sessionStorage.setItem('synapse_auth_user', JSON.stringify(user)); } catch {}
+        } else {
+          try { window.sessionStorage.removeItem('synapse_auth_user'); } catch {}
+        }
+        return user;
       })
       .then(setAccount)
-      .catch(() => setAccount(null))
+      .catch(() => {
+        setAccount(null);
+        try { window.sessionStorage.removeItem('synapse_auth_user'); } catch {}
+      })
       .finally(() => setAccountLoading(false));
 
     // Restore cart
@@ -232,13 +252,7 @@ export function StorefrontProvider({
   // Initial cart open
   useEffect(() => {
     if (!cartRestored) return;
-    let shouldOpen = initialCartOpen;
-    try {
-      if (window.sessionStorage.getItem(CART_DRAWER_STORAGE_KEY) === 'true') {
-        shouldOpen = true;
-      }
-    } catch {}
-    if (shouldOpen) setCartOpen(true);
+    if (initialCartOpen) setCartOpen(true);
   }, [initialCartOpen, cartRestored]);
 
   // Handle escape key
@@ -284,6 +298,11 @@ export function StorefrontProvider({
     [cartItems, checkoutCurrencyCode],
   );
 
+  const formattedSubtotal = useMemo(
+    () => formatCurrencyAmount(subtotal, checkoutCurrencyCode),
+    [subtotal, checkoutCurrencyCode],
+  );
+
   const favoriteItems = useMemo(
     () =>
       favorites
@@ -297,16 +316,10 @@ export function StorefrontProvider({
 
   const openCart = useCallback(() => {
     setCartOpen(true);
-    try {
-      window.sessionStorage.setItem(CART_DRAWER_STORAGE_KEY, 'true');
-    } catch {}
   }, []);
 
   const closeCart = useCallback(() => {
     setCartOpen(false);
-    try {
-      window.sessionStorage.removeItem(CART_DRAWER_STORAGE_KEY);
-    } catch {}
   }, []);
 
   const addToCart = useCallback(
@@ -472,7 +485,10 @@ export function StorefrontProvider({
     setSigningOut(true);
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' });
-      if (response.ok) setAccount(null);
+      if (response.ok) {
+        setAccount(null);
+        try { window.sessionStorage.removeItem('synapse_auth_user'); } catch {}
+      }
     } finally {
       setSigningOut(false);
     }
@@ -497,6 +513,7 @@ export function StorefrontProvider({
     cartItems,
     cartCount,
     subtotal,
+    formattedSubtotal,
     cartOpen,
     openCart,
     closeCart,
